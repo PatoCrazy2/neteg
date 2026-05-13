@@ -105,7 +105,7 @@ Referenciado por `backend/backend.csproj` y `worker/worker.csproj`.
 | Docker Desktop | Containerización |
 | Docker Compose | Orquestación local (postgres + redis + minio + api + worker) |
  
-**El frontend corre fuera de Docker en desarrollo** con `npm run dev`.
+**El frontend corre fuera de Docker en desarrollo** con `pnpm dev`.
  
 ---
  
