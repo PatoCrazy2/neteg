@@ -10,18 +10,18 @@ import { Fingerprint, Zap, Globe } from "lucide-react";
 export default function Home() {
   return (
     <main className="relative min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white overflow-hidden">
-      <GlowBackground />
       <Navbar />
       
       {/* Hero Section with Dashboard Preview */}
-      <div className="relative z-10">
-        <section className="relative">
+      <section className="relative">
+        <GlowBackground />
+        <div className="relative z-10">
           <Hero />
           <Container className="pb-32">
             <DashboardPreview />
           </Container>
-        </section>
-      </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <Section id="features" className="bg-surface relative border-t border-border-custom overflow-hidden">
@@ -65,7 +65,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Cryptographic Verity</h3>
               <p className="text-text-secondary leading-relaxed">
-                Every diploma is uniquely identifiable and instantly verifiable via secure QR indexing, protecting your brand's integrity.
+                Every diploma is uniquely identifiable and instantly verifiable via secure QR indexing, protecting your brand&apos;s integrity.
               </p>
             </GlassCard>
           </div>

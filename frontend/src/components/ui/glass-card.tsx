@@ -4,7 +4,9 @@ import { cn } from "@/lib/utils";
 import { motion, HTMLMotionProps } from "framer-motion";
 import { forwardRef } from "react";
 
-export interface GlassCardProps extends HTMLMotionProps<"div"> {}
+export type GlassCardProps = HTMLMotionProps<"div"> & {
+  children?: React.ReactNode;
+};
 
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   ({ className, children, ...props }, ref) => {
