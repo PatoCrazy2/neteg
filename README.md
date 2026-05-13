@@ -197,8 +197,8 @@ En desarrollo, el frontend corre fuera de Docker para aprovechar:
 
 ```bash
 cd frontend
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ---
