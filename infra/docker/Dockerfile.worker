@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+WORKDIR /app
+COPY worker/ ./worker/
+COPY shared/ ./shared/
+WORKDIR /app/worker
+RUN dotnet restore
+RUN dotnet build
+CMD ["dotnet", "run"]

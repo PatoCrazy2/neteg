@@ -1,0 +1,161 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: neteg_postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - neteg_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: neteg_redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - neteg_network
+
+  minio:
+    image: minio/minio:latest
+    container_name: neteg_minio
+    restart: unless-stopped
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    volumes:
+      - minio_data:/data
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - neteg_network
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+
+    container_name: neteg_api
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+
+      Redis__ConnectionString: redis:6379
+
+      Storage__Endpoint: http://minio:9000
+      Storage__AccessKey: ${MINIO_ROOT_USER}
+      Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
+      Storage__BucketName: ${MINIO_BUCKET}
+
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+
+    ports:
+      - "${API_PORT}:8080"
+
+    networks:
+      - neteg_network
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+
+    container_name: neteg_worker
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+
+      Redis__ConnectionString: redis:6379
+
+      Storage__Endpoint: http://minio:9000
+      Storage__AccessKey: ${MINIO_ROOT_USER}
+      Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
+      Storage__BucketName: ${MINIO_BUCKET}
+
+    networks:
+      - neteg_network
+
+# Frontend corre fuera de Docker en desarrollo
+# cd frontend && npm run dev
+#
+# Requiere:
+# - Node.js 20+
+#
+# Variables:
+# NEXT_PUBLIC_API_URL=http://localhost:${API_PORT}
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+networks:
+  neteg_network:
+    driver: bridge
