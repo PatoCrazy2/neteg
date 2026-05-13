@@ -9,17 +9,19 @@ import { Fingerprint, Zap, Globe } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white">
-      <Navbar />
+    <main className="relative min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white overflow-hidden">
       <GlowBackground />
+      <Navbar />
       
       {/* Hero Section with Dashboard Preview */}
-      <section className="relative">
-        <Hero />
-        <Container className="pb-32">
-          <DashboardPreview />
-        </Container>
-      </section>
+      <div className="relative z-10">
+        <section className="relative">
+          <Hero />
+          <Container className="pb-32">
+            <DashboardPreview />
+          </Container>
+        </section>
+      </div>
 
       {/* Features Section */}
       <Section id="features" className="bg-surface relative border-t border-border-custom overflow-hidden">
