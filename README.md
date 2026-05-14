@@ -40,12 +40,47 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 
 | Funcionalidad | Estado |
 |---|---|
-| Registro de asistentes | 🟡 En desarrollo |
+| Registro de asistentes | ✅ Completado |
+| Autenticación (Local + Google) | ✅ Completado |
 | Generación de pases QR | 🔜 Pendiente |
 | Validación de acceso | 🔜 Pendiente |
 | Control de asistencia | 🔜 Pendiente |
 | Generación automática de certificados | 🔜 Pendiente |
 | Procesamiento asíncrono | 🟢 Arquitectura preparada |
+
+---
+
+# 🔐 Configuración de Autenticación
+
+Para que el sistema de login funcione, debes configurar las llaves de Google y JWT.
+
+### 1️⃣ Google OAuth 2.0
+1. Crea un proyecto en [Google Cloud Console](https://console.cloud.google.com/).
+2. Configura la "Pantalla de consentimiento" (User Type: Externo).
+3. Crea un "ID de cliente de OAuth 2.0" (Tipo: Aplicación web).
+4. Añade `http://localhost:3000` en:
+   - Orígenes de JavaScript autorizados.
+   - URIs de redireccionamiento autorizados.
+
+### 2️⃣ Configuración de Variables de Entorno
+
+**En la Raíz (`.env`):**
+Copia el contenido de `.env.example` y rellena los secretos. Docker usará estos valores para la API, la Base de Datos y el Storage.
+```env
+# Ejemplo de lo que debes configurar
+JWT_KEY=una_llave_muy_larga_y_secreta
+GOOGLE_CLIENT_ID=tu_id_de_google.apps.googleusercontent.com
+```
+
+**En el Frontend (`frontend/.env`):**
+Asegúrate de que el ID de Google también esté aquí para que el botón de login funcione en desarrollo local.
+```env
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=tu_id_de_google.apps.googleusercontent.com
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+> [!IMPORTANT]
+> El archivo `backend/appsettings.json` ya está pre-configurado para leer estas variables automáticamente desde Docker. No es necesario editarlo para el flujo estándar.
 
 ---
 
