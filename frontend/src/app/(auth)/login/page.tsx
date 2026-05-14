@@ -53,29 +53,48 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-black">
       {/* ── Panel izquierdo: Branding ── */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] relative flex-col justify-end p-12 overflow-hidden shrink-0">
-        {/* Patrón de fondo */}
+      <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] relative flex-col items-center justify-center p-12 overflow-hidden shrink-0 bg-[#050508]">
+        
+        {/* Patrón de malla densa — esquina superior izquierda (púrpura claro) */}
         <div
-          className="absolute inset-0 opacity-[0.15]"
+          className="absolute top-0 left-0 w-[70%] h-[60%]"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(185,180,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(185,180,255,0.3) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
+            backgroundImage: "radial-gradient(rgba(185,180,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "6px 6px",
+            maskImage: "linear-gradient(135deg, black 0%, black 15%, transparent 50%)",
+            WebkitMaskImage: "linear-gradient(135deg, black 0%, black 15%, transparent 50%)",
+            opacity: 0.6,
           }}
         />
-        {/* Gradiente diagonal */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-900/20" />
-        {/* Fade inferior */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        {/* Glow sutil detrás del patrón superior */}
+        <div
+          className="absolute top-[-5%] left-[-5%] w-[50%] h-[40%] rounded-full blur-[80px] pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(156,140,255,0.15) 0%, transparent 70%)" }}
+        />
 
-        <div className="relative z-10 space-y-6">
-          <Image src="/NETEG.svg" alt="NETEG" width={52} height={52} className="rounded-xl" />
-          <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight tracking-tight">
+        {/* Patrón de malla densa — esquina inferior derecha (violeta cálido) */}
+        <div
+          className="absolute bottom-0 right-0 w-[70%] h-[60%]"
+          style={{
+            backgroundImage: "radial-gradient(rgba(168,85,247,0.5) 1px, transparent 1px)",
+            backgroundSize: "6px 6px",
+            maskImage: "linear-gradient(315deg, black 0%, black 15%, transparent 50%)",
+            WebkitMaskImage: "linear-gradient(315deg, black 0%, black 15%, transparent 50%)",
+            opacity: 0.5,
+          }}
+        />
+        {/* Glow sutil detrás del patrón inferior */}
+        <div
+          className="absolute bottom-[-5%] right-[-5%] w-[50%] h-[40%] rounded-full blur-[80px] pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)" }}
+        />
+
+        {/* Contenido centrado */}
+        <div className="relative z-10 text-center space-y-5">
+          <Image src="/NETEG.svg" alt="NETEG" width={56} height={56} className="mx-auto rounded-xl" />
+          <h2 className="text-2xl xl:text-3xl font-bold text-white leading-snug tracking-tight max-w-xs mx-auto">
             Automatiza tus eventos sin complicaciones.
           </h2>
-          <p className="text-text-secondary text-base max-w-sm">
-            Certificados, pases QR y control de asistencia en una sola plataforma.
-          </p>
         </div>
       </div>
 
