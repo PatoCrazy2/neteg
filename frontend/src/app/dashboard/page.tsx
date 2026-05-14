@@ -16,8 +16,11 @@ import {
   Palette,
   Settings2
 } from "lucide-react";
+import { useDashboard } from "@/app/dashboard/layout";
+import { eventApi } from "@/lib/api";
 
 export default function DashboardPage() {
+  const { theme, setTheme } = useDashboard();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -28,110 +31,174 @@ export default function DashboardPage() {
     requiresApproval: false,
   });
 
+  const isLight = theme === 'light';
+
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
+    
+    if (!formData.name || !formData.date || !formData.location) {
+      alert("Por favor completa los campos obligatorios (Nombre, Fecha y Ubicación)");
+      return;
+    }
+
     setLoading(true);
     try {
-      console.log("Creating event:", formData);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Nota: Solo enviamos los campos soportados actualmente por la API/DB
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        date: new Date(formData.date).toISOString(),
+        location: formData.location
+      };
+      
+      await eventApi.createEvent(payload);
+      alert("¡Evento creado con éxito!");
+      
+      // Limpiar formulario opcionalmente
+      setFormData({
+        name: "",
+        date: "",
+        location: "",
+        description: "",
+        capacity: "",
+        requiresApproval: false,
+      });
     } catch (error) {
       console.error("Error creating event", error);
+      alert(`Error al crear el evento: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-6">
+    <div className="h-full flex items-center justify-center p-6 transition-colors duration-700">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
         
-        {/* Left Column: Visual Panel (40%) */}
+        {/* Columna Izquierda: Panel Visual (40%) */}
         <div className="lg:col-span-5 space-y-8 sticky top-0">
           <div className="space-y-4">
-            <div className="group relative aspect-[4/5] w-full rounded-3xl overflow-hidden bg-white/[0.03] border border-white/5 transition-all duration-500 hover:border-[#B9B4FF]/30">
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/10 group-hover:text-[#B9B4FF]/40 transition-all">
+            <div className={`group relative aspect-[4/5] w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
+              isLight ? 'bg-black/5 border-black/5 hover:border-black/20' : 'bg-white/[0.03] border-white/5 hover:border-[#B9B4FF]/30'
+            }`}>
+              <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
+                isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
+              }`}>
                 <Camera size={32} strokeWidth={1.5} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Cover Image</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
               </div>
               <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
             </div>
 
             <div className="flex items-center justify-between px-2">
               <div className="flex gap-2">
-                {[1, 2, 3].map((i) => (
-                  <button key={i} className="w-6 h-6 rounded-full border border-white/10 bg-white/5 hover:border-[#B9B4FF]/50 transition-all" />
-                ))}
-                <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/40 hover:text-white transition-all">
-                  <Palette size={12} /> Themes
+                <button 
+                  onClick={() => setTheme('default')}
+                  title="Default (Plasma)"
+                  className={`w-6 h-6 rounded-full border transition-all bg-[#B9B4FF] ${theme === 'default' ? 'ring-2 ring-white scale-110' : 'border-white/10 opacity-50 hover:opacity-100'}`} 
+                />
+                <button 
+                  onClick={() => setTheme('black')}
+                  title="Pure Black"
+                  className={`w-6 h-6 rounded-full border transition-all bg-black ${theme === 'black' ? 'ring-2 ring-white scale-110' : 'border-white/10 opacity-50 hover:opacity-100'}`} 
+                />
+                <button 
+                  onClick={() => setTheme('light')}
+                  title="Light Mode"
+                  className={`w-6 h-6 rounded-full border transition-all bg-white ${theme === 'light' ? 'ring-2 ring-black scale-110' : 'border-black/10 opacity-50 hover:opacity-100'}`} 
+                />
+                <div className={`h-6 w-px mx-1 ${isLight ? 'bg-black/10' : 'bg-white/10'}`} />
+                <button className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold transition-all ${
+                  isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'
+                }`}>
+                  <Palette size={12} /> Temas
                 </button>
               </div>
-              <button className="text-[10px] font-bold text-white/20 hover:text-white uppercase tracking-widest transition-all">
-                Preview
+              <button className={`text-[10px] font-bold uppercase tracking-widest transition-all ${
+                isLight ? 'text-black/20 hover:text-black' : 'text-white/20 hover:text-white'
+              }`}>
+                Vista Previa
               </button>
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
-            <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Quick Stats</h4>
+          <div className={`p-6 rounded-2xl border transition-all ${
+            isLight ? 'bg-black/5 border-black/5' : 'bg-white/[0.02] border-white/5'
+          }`}>
+            <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 ${isLight ? 'text-black/20' : 'text-white/20'}`}>Estado Actual</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-[10px] text-white/40">Status</p>
-                <p className="text-xs font-medium text-[#B9B4FF]">Drafting</p>
+                <p className={`text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Estado</p>
+                <p className="text-xs font-medium text-[#B9B4FF]">Borrador</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] text-white/40">Visibility</p>
-                <p className="text-xs font-medium">Private</p>
+                <p className={`text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Visibilidad</p>
+                <p className={`text-xs font-medium ${isLight ? 'text-black/60' : 'text-white/60'}`}>Privado</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Configuration (60%) */}
+        {/* Columna Derecha: Configuración (60%) */}
         <div className="lg:col-span-7 space-y-10">
           
           {/* Metadata Header */}
-          <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
-            <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
-              <Globe size={12} className="text-[#B9B4FF]" /> Public Event
+          <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] ${
+            isLight ? 'text-black/30' : 'text-white/30'
+          }`}>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${
+              isLight ? 'bg-black/5 border-black/5' : 'bg-white/5 border-white/5'
+            }`}>
+              <Globe size={12} className="text-[#B9B4FF]" /> Evento Público
             </div>
             <div className="flex items-center gap-1.5">
-              <Lock size={12} /> Invite Only
+              <Lock size={12} /> Solo Invitados
             </div>
           </div>
 
-          {/* Editable Heading */}
+          {/* Nombre del Evento (Editable Heading) */}
           <div className="space-y-2">
             <input 
               type="text"
-              placeholder="Event Name..."
-              className="w-full bg-transparent border-none p-0 text-5xl font-bold focus:outline-none placeholder:text-white/5 tracking-tight leading-tight"
+              placeholder="Nombre del evento..."
+              className={`w-full bg-transparent border-none p-0 text-5xl font-bold focus:outline-none tracking-tight leading-tight transition-colors ${
+                isLight ? 'placeholder:text-black/10 text-black' : 'placeholder:text-white/5 text-white'
+              }`}
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
             />
           </div>
 
-          {/* Integrated Inline Controls */}
+          {/* Controles Integrados */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div className="space-y-1.5">
-              <label className="flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest">
-                <Calendar size={12} /> Date & Time
+              <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
+                isLight ? 'text-black/20' : 'text-white/20'
+              }`}>
+                <Calendar size={12} /> Fecha y Hora
               </label>
               <input 
                 type="datetime-local"
-                className="w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none text-white/80 transition-all"
+                className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
+                  isLight ? 'text-black/80' : 'text-white/80'
+                }`}
                 value={formData.date}
                 onChange={(e) => setFormData({...formData, date: e.target.value})}
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest">
-                <MapPin size={12} /> Location
+              <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
+                isLight ? 'text-black/20' : 'text-white/20'
+              }`}>
+                <MapPin size={12} /> Ubicación
               </label>
               <input 
                 type="text"
-                placeholder="Add physical address or link"
-                className="w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none text-white/80 placeholder:text-white/10"
+                placeholder="Dirección o link"
+                className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
+                  isLight ? 'text-black/80 placeholder:text-black/10' : 'text-white/80 placeholder:text-white/10'
+                }`}
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
               />
@@ -139,48 +206,56 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest">
-              <AlignLeft size={12} /> Description
+            <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
+              isLight ? 'text-black/20' : 'text-white/20'
+            }`}>
+              <AlignLeft size={12} /> Descripción
             </label>
             <textarea 
-              placeholder="What is this event about?"
+              placeholder="¿De qué trata este evento?"
               rows={4}
-              className="w-full bg-transparent border-none p-0 text-[15px] leading-relaxed focus:outline-none text-white/60 placeholder:text-white/5 resize-none"
+              className={`w-full bg-transparent border-none p-0 text-[15px] leading-relaxed focus:outline-none transition-all resize-none ${
+                isLight ? 'text-black/60 placeholder:text-black/5' : 'text-white/60 placeholder:text-white/5'
+              }`}
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
-          {/* Settings List (List Style) */}
-          <div className="pt-6 border-t border-white/5 space-y-1">
-            <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-              <Settings2 size={12} /> Preferences
+          {/* Lista de Preferencias */}
+          <div className={`pt-6 border-t space-y-1 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
+            <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${
+              isLight ? 'text-black/20' : 'text-white/20'
+            }`}>
+              <Settings2 size={12} /> Preferencias
             </h4>
             
             <div className="space-y-1">
-              <div className="flex items-center justify-between py-3 group hover:bg-white/[0.02] px-3 -mx-3 rounded-xl transition-all">
+              <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-black/5`}>
                 <div className="flex items-center gap-3">
-                  <Users size={16} className="text-white/20" />
-                  <span className="text-sm text-white/60">Participant Capacity</span>
+                  <Users size={16} className={isLight ? 'text-black/20' : 'text-white/20'} />
+                  <span className={`text-sm ${isLight ? 'text-black/60' : 'text-white/60'}`}>Capacidad (Opcional en DB)</span>
                 </div>
                 <input 
                   type="number"
-                  placeholder="Unlimited"
-                  className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-xs w-24 text-right focus:outline-none focus:border-[#B9B4FF]/50"
+                  placeholder="Sin límite"
+                  className={`border rounded-lg px-3 py-1 text-xs w-24 text-right focus:outline-none focus:border-[#B9B4FF]/50 ${
+                    isLight ? 'bg-black/5 border-black/10 text-black' : 'bg-white/5 border-white/10 text-white'
+                  }`}
                   value={formData.capacity}
                   onChange={(e) => setFormData({...formData, capacity: e.target.value})}
                 />
               </div>
 
-              <div className="flex items-center justify-between py-3 group hover:bg-white/[0.02] px-3 -mx-3 rounded-xl transition-all">
+              <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-black/5`}>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className={formData.requiresApproval ? 'text-[#B9B4FF]' : 'text-white/20'} />
-                  <span className="text-sm text-white/60">Manual Approval</span>
+                  <CheckCircle2 size={16} className={formData.requiresApproval ? 'text-[#B9B4FF]' : (isLight ? 'text-black/20' : 'text-white/20')} />
+                  <span className={`text-sm ${isLight ? 'text-black/60' : 'text-white/60'}`}>Aprobación Manual</span>
                 </div>
                 <button 
                   type="button"
                   onClick={() => setFormData({...formData, requiresApproval: !formData.requiresApproval})}
-                  className={`w-8 h-4 rounded-full relative transition-colors ${formData.requiresApproval ? 'bg-[#B9B4FF]' : 'bg-white/10'}`}
+                  className={`w-8 h-4 rounded-full relative transition-colors ${formData.requiresApproval ? 'bg-[#B9B4FF]' : (isLight ? 'bg-black/10' : 'bg-white/10')}`}
                 >
                   <motion.div 
                     animate={{ x: formData.requiresApproval ? 18 : 2 }}
@@ -191,18 +266,20 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Connected CTA */}
+          {/* Botón de Acción */}
           <div className="pt-4">
             <motion.button 
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={handleSubmit}
               disabled={loading}
-              className="group flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-[#B9B4FF] transition-all disabled:opacity-50"
+              className={`group flex items-center gap-3 px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all disabled:opacity-50 ${
+                isLight ? 'bg-black text-white hover:bg-[#B9B4FF] hover:text-black' : 'bg-white text-black hover:bg-[#B9B4FF]'
+              }`}
             >
               {loading ? <Loader2 className="animate-spin" size={16} /> : (
                 <>
-                  Create Event
+                  Crear Evento
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}
