@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { authApi, setToken } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +34,8 @@ export default function RegisterPage() {
 
     if (!password) {
       newErrors.password = "La contraseña es requerida.";
-    } else if (password.length < 8) {
-      newErrors.password = "La contraseña debe tener al menos 8 caracteres.";
+    } else if (password.length < 6) {
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
     }
 
     if (password !== confirmPassword) {
@@ -47,8 +50,25 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Integrar la llamada real a tu AuthService aquí (Registro)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await authApi.register({ 
+        fullName: name, 
+        email, 
+        password 
+      });
+      
+      // Store token
+      setToken(response.token);
+      
+      // Store user info
+      localStorage.setItem("user", JSON.stringify({
+        id: response.userId,
+        fullName: response.fullName,
+        email: response.email,
+        role: response.role
+      }));
+
+      // Redirect to dashboard
+      router.push("/dashboard");
     } catch (error) {
       setErrors({
         server: error instanceof Error ? error.message : "Ocurrió un error inesperado al intentar crear tu cuenta.",

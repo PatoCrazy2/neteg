@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { authApi, setToken } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,8 +37,21 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Integrar la llamada real a tu AuthService aquí
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await authApi.login({ email, password });
+      
+      // Store token
+      setToken(response.token);
+      
+      // Store basic user info if needed or just redirect
+      localStorage.setItem("user", JSON.stringify({
+        id: response.userId,
+        fullName: response.fullName,
+        email: response.email,
+        role: response.role
+      }));
+
+      // Redirect to dashboard
+      router.push("/dashboard");
     } catch (error) {
       setErrors({
         server: error instanceof Error ? error.message : "Ocurrió un error inesperado al intentar iniciar sesión.",
