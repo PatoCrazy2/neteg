@@ -138,7 +138,8 @@ export function TopNavbar() {
                   <button 
                     onClick={() => {
                       localStorage.removeItem("token");
-                      window.location.reload();
+                      localStorage.removeItem("user");
+                      window.location.href = "/login";
                     }}
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-red-400/60 hover:text-red-400 transition-colors text-left"
                   >
