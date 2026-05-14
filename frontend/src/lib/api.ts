@@ -1,5 +1,5 @@
+import { CreateEventRequest, Event } from "@/types/event";
 import { AuthResponse } from "@/types/auth";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -9,6 +9,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
   }
   return response.json();
 }
+
+const getHeaders = () => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
 export const authApi = {
   register: async (data: any): Promise<AuthResponse> => {
@@ -36,6 +44,24 @@ export const authApi = {
       body: JSON.stringify(data),
     });
     return handleResponse<AuthResponse>(response);
+  },
+};
+
+export const eventApi = {
+  getMyEvents: async (): Promise<Event[]> => {
+    const response = await fetch(`${API_URL}/api/events/me`, {
+      headers: getHeaders(),
+    });
+    return handleResponse<Event[]>(response);
+  },
+
+  createEvent: async (data: CreateEventRequest): Promise<Event> => {
+    const response = await fetch(`${API_URL}/api/events`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Event>(response);
   },
 };
 
