@@ -1,14 +1,11 @@
 import { TopNavbar } from "@/components/layouts/TopNavbar";
+import { PlasmaBackground } from "@/components/ui/PlasmaBackground";
 import { ReactNode } from "react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="h-screen overflow-hidden bg-black text-white selection:bg-[#B9B4FF]/30 flex flex-col">
-      {/* Background Lighting Effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-[#B9B4FF]/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-[#9C8CFF]/5 blur-[120px] rounded-full" />
-      </div>
+    <div className="h-screen overflow-hidden text-white selection:bg-[#B9B4FF]/30 flex flex-col relative">
+      <PlasmaBackground />
 
       <TopNavbar />
 
