@@ -1,3 +1,5 @@
+"use client";
+
 import { Navbar } from "@/components/ui/navbar";
 import { Hero } from "@/components/ui/hero";
 import { DashboardPreview } from "@/components/ui/dashboard-preview";
@@ -6,19 +8,35 @@ import { Section } from "@/components/ui/section";
 import { Container } from "@/components/ui/container";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Fingerprint, Zap, Globe } from "lucide-react";
+import { Footer } from "@/components/ui/footer";
+import { useMotionValue } from "framer-motion";
+import Link from "next/link";
 
 export default function Home() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const x = (e.clientX / window.innerWidth) - 0.5;
+    const y = (e.clientY / window.innerHeight) - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
   return (
-    <main className="relative min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white overflow-hidden">
+    <main
+      onMouseMove={handleMouseMove}
+      className="relative min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white overflow-hidden"
+    >
       <Navbar />
-      
+
       {/* Hero Section with Dashboard Preview */}
       <section className="relative">
         <GlowBackground />
         <div className="relative z-10">
           <Hero />
           <Container className="pb-32">
-            <DashboardPreview />
+            <DashboardPreview mouseX={mouseX} mouseY={mouseY} />
           </Container>
         </div>
       </section>
@@ -26,14 +44,14 @@ export default function Home() {
       {/* Features Section */}
       <Section id="features" className="bg-surface relative border-t border-border-custom overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-        
+
         <Container>
           <div className="text-center mb-24">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
               Precision engineered.
             </h2>
             <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              Built on a modern stack with uncompromising attention to detail. Neteg delivers 
+              Built on a modern stack with uncompromising attention to detail. Neteg delivers
               performance and aesthetics without sacrificing reliability.
             </p>
           </div>
@@ -83,15 +101,22 @@ export default function Home() {
             Join the most ambitious organizations using Neteg to deliver premium digital certificates at unprecedented scale.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="h-14 px-8 rounded-2xl bg-white text-black font-medium text-lg hover:bg-gray-200 transition-colors">
-              Deploy to Production
-            </button>
-            <button className="h-14 px-8 rounded-2xl bg-glass border border-border-custom text-white font-medium text-lg hover:bg-white/5 backdrop-blur-md transition-colors">
-              Contact Sales
-            </button>
+            <Link href="/register">
+              <button className="h-14 px-8 rounded-2xl bg-white text-black font-medium text-lg hover:bg-gray-200 transition-colors">
+                Deploy to Production
+              </button>
+            </Link>
+            <Link href="/login">
+              <button className="h-14 px-8 rounded-2xl bg-glass border border-border-custom text-white font-medium text-lg hover:bg-white/5 backdrop-blur-md transition-colors">
+                Contact Sales
+              </button>
+            </Link>
           </div>
         </Container>
       </Section>
+
+      <Footer />
     </main>
   );
 }
+

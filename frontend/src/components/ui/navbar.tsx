@@ -2,11 +2,14 @@
 
 import { Container } from "./container";
 import { Button } from "./button";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
+import Image from "next/image";
 
 export function Navbar() {
   const { scrollY } = useScroll();
+  const [isHovered, setIsHovered] = useState(false);
 
   // Interpolate values based on scroll position (0 to 100 pixels)
   const bgOpacity = useTransform(scrollY, [0, 80], [0.05, 0.7]);
@@ -38,8 +41,46 @@ export function Navbar() {
     >
       <Container className="flex h-20 items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-xl font-bold tracking-tighter text-white">
-            NETEG
+          <Link 
+            href="/" 
+            className="relative h-10 flex items-center"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <div className="relative flex items-center justify-center min-w-[120px]">
+              <AnimatePresence mode="wait">
+                {isHovered ? (
+                  <motion.div
+                    key="logo-svg"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.1 }}
+                    className="flex items-center justify-center"
+                  >
+                    <Image 
+                      src="/NETEG.svg" 
+                      alt="NETEG Logo" 
+                      width={130} 
+                      height={40} 
+                      className="h-10 w-auto brightness-200"
+                      style={{ width: "auto" }}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.span
+                    key="logo-text"
+                    initial={{ opacity: 0, y: 2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -2 }}
+                    transition={{ duration: 0.1 }}
+                    className="text-3xl font-extrabold tracking-[-0.06em] text-white whitespace-nowrap"
+                  >
+                    NETEG
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
           </Link>
           <nav className="hidden md:flex gap-6 text-sm font-medium text-text-secondary">
             <Link href="#features" className="hover:text-primary transition-colors">Features</Link>
@@ -50,9 +91,11 @@ export function Navbar() {
           <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-white transition-colors hidden sm:block">
             Sign In
           </Link>
-          <Button variant="primary" size="sm" className="hidden sm:inline-flex">
-            Get Started
-          </Button>
+          <Link href="/register" tabIndex={-1}>
+            <Button variant="primary" size="sm" className="hidden sm:inline-flex">
+              Get Started
+            </Button>
+          </Link>
         </div>
       </Container>
     </motion.header>
