@@ -1,8 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0
 WORKDIR /app
-COPY worker/ ./worker/
-COPY shared/ ./shared/
+
+# Copiar archivos de proyecto
+COPY shared/*.csproj ./shared/
+COPY worker/*.csproj ./worker/
+RUN dotnet restore worker/worker.csproj
+
+# Copiar código
+COPY . .
+
 WORKDIR /app/worker
-RUN dotnet restore
-RUN dotnet build
 CMD ["dotnet", "run"]

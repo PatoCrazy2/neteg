@@ -85,8 +85,18 @@ export default function LoginPage() {
     <div className="min-h-screen flex bg-black">
       {/* Panel izquierdo: Branding */}
       <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] relative flex-col items-center justify-center p-12 overflow-hidden shrink-0 bg-[#050508]">
-        <div className="absolute top-0 left-0 w-[70%] h-[60%]" style={{ backgroundImage: "radial-gradient(rgba(185,180,255,0.5) 1px, transparent 1px)", backgroundSize: "6px 6px", maskImage: "linear-gradient(135deg, black 0%, black 15%, transparent 50%)", opacity: 0.6 }} />
-        <div className="absolute top-[-5%] left-[-5%] w-[50%] h-[40%] rounded-full blur-[80px] pointer-events-none" style={{ background: "radial-gradient(circle, rgba(156,140,255,0.15) 0%, transparent 70%)" }} />
+        <div className="absolute inset-0 w-full h-full animate-gradient-move opacity-100" style={{ 
+          background: "linear-gradient(135deg, #9C8CFF, #000000, #FF8CFF, #000000, #A0A0A0, #000000, #B9B4FF, #000000, #9C8CFF)", 
+          backgroundSize: "300% 300%", 
+          WebkitMaskImage: "radial-gradient(black 1.5px, transparent 1.5px), linear-gradient(135deg, black 0%, black 60%, transparent 100%)", 
+          WebkitMaskSize: "8px 8px, 100% 100%", 
+          WebkitMaskRepeat: "repeat, no-repeat", 
+          WebkitMaskComposite: "source-in", 
+          maskImage: "radial-gradient(black 1.5px, transparent 1.5px), linear-gradient(135deg, black 0%, black 60%, transparent 100%)", 
+          maskSize: "8px 8px, 100% 100%", 
+          maskRepeat: "repeat, no-repeat", 
+          maskComposite: "intersect" 
+        }} />
         <div className="relative z-10 text-center space-y-5">
           <Image src="/NETEG.svg" alt="NETEG" width={56} height={56} className="mx-auto rounded-xl" />
           <h2 className="text-2xl xl:text-3xl font-bold text-white leading-snug tracking-tight max-w-xs mx-auto">
