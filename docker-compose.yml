@@ -91,19 +91,16 @@ services:
 
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__GoogleClientId: ${GOOGLE_CLIENT_ID}
       Redis__ConnectionString: redis:6379
-
       Storage__Endpoint: http://minio:9000
       Storage__AccessKey: ${MINIO_ROOT_USER}
       Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
       Storage__BucketName: ${MINIO_BUCKET}
-
-      Jwt__Secret: ${JWT_SECRET}
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
 
     ports:
       - "${API_PORT}:8080"

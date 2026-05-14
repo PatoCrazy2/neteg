@@ -28,6 +28,15 @@ export const authApi = {
     });
     return handleResponse<AuthResponse>(response);
   },
+
+  googleLogin: async (data: { idToken: string }): Promise<AuthResponse> => {
+    const response = await fetch(`${API_URL}/api/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<AuthResponse>(response);
+  },
 };
 
 // Helper to get stored token
