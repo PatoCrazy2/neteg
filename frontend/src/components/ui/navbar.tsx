@@ -50,9 +50,11 @@ export function Navbar() {
           <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-white transition-colors hidden sm:block">
             Sign In
           </Link>
-          <Button variant="primary" size="sm" className="hidden sm:inline-flex">
-            Get Started
-          </Button>
+          <Link href="/register" tabIndex={-1}>
+            <Button variant="primary" size="sm" className="hidden sm:inline-flex">
+              Get Started
+            </Button>
+          </Link>
         </div>
       </Container>
     </motion.header>
