@@ -1,13 +1,35 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import { Container } from "./container";
+import { useRef } from "react";
 
-export function Hero() {
+export function Hero({ children }: { children?: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
   return (
-    <div className="relative pt-24 pb-4 md:pt-32 md:pb-6 overflow-hidden">
+    <div 
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative pt-24 pb-4 md:pt-32 md:pb-6 overflow-hidden group/hero"
+    >
       <Container className="relative z-10 text-center flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -46,7 +68,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-row gap-4 items-center justify-center"
+          className="flex flex-row gap-4 items-center justify-center mb-12"
         >
           <div className="relative group">
             <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -58,6 +80,14 @@ export function Hero() {
             View Documentation
           </Button>
         </motion.div>
+
+        {/* Pass motion values to children if they are cloned, or we use them here */}
+        {children && (
+          <div className="w-full">
+            {/* We will handle this in page.tsx for better composition */}
+            {/* But for now, we expect children to be DashboardPreview with these values */}
+          </div>
+        )}
       </Container>
     </div>
   );

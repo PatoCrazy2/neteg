@@ -1,3 +1,5 @@
+"use client";
+
 import { Navbar } from "@/components/ui/navbar";
 import { Hero } from "@/components/ui/hero";
 import { DashboardPreview } from "@/components/ui/dashboard-preview";
@@ -6,10 +8,24 @@ import { Section } from "@/components/ui/section";
 import { Container } from "@/components/ui/container";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Fingerprint, Zap, Globe } from "lucide-react";
+import { useMotionValue } from "framer-motion";
 
 export default function Home() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const x = (e.clientX / window.innerWidth) - 0.5;
+    const y = (e.clientY / window.innerHeight) - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
   return (
-    <main className="relative min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white overflow-hidden">
+    <main 
+      onMouseMove={handleMouseMove}
+      className="relative min-h-screen bg-black text-text-primary selection:bg-primary/30 selection:text-white overflow-hidden"
+    >
       <Navbar />
       
       {/* Hero Section with Dashboard Preview */}
@@ -18,7 +34,7 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <Container className="pb-32">
-            <DashboardPreview />
+            <DashboardPreview mouseX={mouseX} mouseY={mouseY} />
           </Container>
         </div>
       </section>
