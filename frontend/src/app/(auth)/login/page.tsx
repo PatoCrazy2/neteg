@@ -4,6 +4,7 @@ import { useState } from "react";
 // Se han removido las importaciones de Card, Input y LoadingSpinner temporalmente 
 // para evitar errores de compilación hasta que los instales.
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -167,12 +168,12 @@ export default function LoginPage() {
         {/* Enlace inferior */}
         <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
           ¿No tienes una cuenta?{" "}
-          <a 
-            href="#" 
+          <Link 
+            href="/register" 
             className="text-zinc-900 dark:text-zinc-100 font-medium hover:underline underline-offset-4"
           >
             Solicita acceso
-          </a>
+          </Link>
         </p>
 
       </div>

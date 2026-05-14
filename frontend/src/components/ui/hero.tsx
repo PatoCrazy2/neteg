@@ -1,8 +1,9 @@
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import { Container } from "./container";
 import { useRef } from "react";
+import Link from "next/link";
 
 export function Hero({ children }: { children?: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,14 +73,17 @@ export function Hero({ children }: { children?: React.ReactNode }) {
         >
           <div className="relative group">
             <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <Button variant="primary" size="md" className="relative z-10 px-6">
-              Start Building
-            </Button>
+            <Link href="/register">
+              <Button variant="primary" size="md" className="relative z-10 px-6">
+                Start Building
+              </Button>
+            </Link>
           </div>
           <Button variant="glass" size="md" className="px-6">
             View Documentation
           </Button>
         </motion.div>
+
 
         {/* Pass motion values to children if they are cloned, or we use them here */}
         {children && (
