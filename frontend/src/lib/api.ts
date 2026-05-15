@@ -73,6 +73,13 @@ export const eventApi = {
     return handleResponse<Event>(response);
   },
 
+  getParticipatingEvents: async (): Promise<Event[]> => {
+    const response = await fetch(`${API_URL}/api/events/participating`, {
+      headers: getHeaders(),
+    });
+    return handleResponse<Event[]>(response);
+  },
+
   uploadCoverImage: async (eventId: string, file: File): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append("file", file);
