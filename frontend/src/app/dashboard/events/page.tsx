@@ -5,8 +5,10 @@ import { eventApi } from "@/lib/api";
 import { Event } from "@/types/event";
 import { useDashboard } from "@/app/dashboard/layout";
 import { EventCard } from "@/components/events/EventCard";
+import { DigitalTicket } from "@/components/events/DigitalTicket";
+import { EventDashboardPreview } from "@/components/events/EventDashboardPreview";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Calendar, Filter as FilterIcon } from "lucide-react";
+import { Plus, Search, Calendar, Filter as FilterIcon, X, MapPin, Clock } from "lucide-react";
 
 type Tab = 'attending' | 'created';
 type Filter = 'upcoming' | 'past';
@@ -16,6 +18,7 @@ export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('attending');
   const [activeFilter, setActiveFilter] = useState<Filter>('upcoming');
   const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,7 +85,7 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="h-full flex flex-col px-4 sm:px-8 pt-8 overflow-hidden bg-black/20 backdrop-blur-3xl">
+    <div className="h-full flex flex-col px-4 sm:px-8 pt-8 overflow-hidden bg-black/20 backdrop-blur-3xl relative">
       {/* Top Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -197,7 +200,7 @@ export default function EventsPage() {
                              event={event}
                              isCreator={activeTab === 'created'}
                              status={activeTab === 'created' ? 'creator' : 'going'}
-                             onClick={() => console.log('Details', event.id)}
+                             onClick={() => setSelectedEvent(event)}
                            />
                          ))}
                       </div>
@@ -207,6 +210,81 @@ export default function EventsPage() {
             )}
          </AnimatePresence>
       </div>
+
+      {/* Side Detail Panel (Sheet) */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <>
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedEvent(null)}
+              className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            />
+            
+            {/* Panel */}
+            <motion.div 
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="absolute top-0 right-0 h-full w-full max-w-md bg-[#0B0B0E] border-l border-white/10 z-50 shadow-2xl flex flex-col"
+            >
+              {/* Panel Header */}
+              <div className="p-6 flex items-center justify-between border-b border-white/5">
+                 <button 
+                   onClick={() => setSelectedEvent(null)}
+                   className="w-10 h-10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-all"
+                 >
+                   <X className="w-5 h-5" />
+                 </button>
+                 <div className="text-center">
+                    <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Detalles del Evento</div>
+                    <div className="text-xs font-bold text-white max-w-[200px] truncate">{selectedEvent.name}</div>
+                 </div>
+                 <div className="w-10 h-10" /> {/* Spacer */}
+              </div>
+
+              {/* Panel Content */}
+              <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                 <div className="mb-8">
+                   <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 mb-6">
+                      {selectedEvent.coverImageUrl ? (
+                        <img src={selectedEvent.coverImageUrl} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/10 italic text-sm">Sin imagen</div>
+                      )}
+                   </div>
+                   
+                   <h3 className="text-2xl font-bold text-white tracking-tight mb-4">{selectedEvent.name}</h3>
+                   
+                   <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3 text-white/60 text-sm">
+                        <MapPin className="w-4 h-4 text-[#B9B4FF]" />
+                        {selectedEvent.location}
+                      </div>
+                      <div className="flex items-center gap-3 text-white/60 text-sm">
+                        <Clock className="w-4 h-4 text-[#B9B4FF]" />
+                        {new Date(selectedEvent.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                      </div>
+                   </div>
+                 </div>
+
+                 <div className="h-px w-full bg-white/5 mb-8" />
+
+                 {/* Conditional Component View */}
+                 {activeTab === 'created' ? (
+                   <EventDashboardPreview event={selectedEvent} />
+                 ) : (
+                   <DigitalTicket event={selectedEvent} />
+                 )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
