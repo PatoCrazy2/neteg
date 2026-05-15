@@ -17,11 +17,14 @@ import {
   Settings2,
   Clock,
   Plus,
-  Minus
+  Minus,
+  Copy,
+  Link as LinkIcon
 } from "lucide-react";
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
 import { LocationInput } from "@/components/ui/LocationInput";
+import { FormBuilder, FormQuestion } from "@/components/events/FormBuilder";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
@@ -44,6 +47,10 @@ export default function DashboardPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [formSchema, setFormSchema] = useState<FormQuestion[]>([]);
+  const [createdEventId, setCreatedEventId] = useState<string | null>(null);
 
   const isLight = theme === 'light';
 
@@ -56,7 +63,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleNext = (e: React.FormEvent) => {
     if (e) e.preventDefault();
     
     const errors: Record<string, string> = {};
@@ -71,9 +78,12 @@ export default function DashboardPage() {
     }
     
     setFormErrors({});
+    setShowFormModal(true);
+  };
+
+  const handleCreateEvent = async () => {
     setLoading(true);
     try {
-      // Combinar fecha y hora para el backend
       const combinedDateTime = new Date(`${formData.date}T${formData.time}`).toISOString();
       
       const payload = {
@@ -83,16 +93,18 @@ export default function DashboardPage() {
         location: formData.location,
         isPublic: formData.isPublic,
         requiresApproval: formData.requiresApproval,
-        capacity: formData.capacity ? parseInt(formData.capacity) : undefined
+        capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
+        formSchema: JSON.stringify(formSchema)
       };
 
       const createdEvent = await eventApi.createEvent(payload);
 
-      // Si hay una imagen seleccionada, subirla ahora
       if (selectedFile) {
         await eventApi.uploadCoverImage(createdEvent.id, selectedFile);
       }
 
+      setCreatedEventId(createdEvent.id);
+      setShowFormModal(false);
       setShowSuccess(true);
       
       setFormData({
@@ -107,6 +119,7 @@ export default function DashboardPage() {
       });
       setSelectedFile(null);
       setPreviewUrl(null);
+      setFormSchema([]);
     } catch (error) {
       console.error("Error creating event", error);
       alert(`Error al crear el evento: ${error instanceof Error ? error.message : 'Error desconocido'}`);
@@ -420,23 +433,66 @@ export default function DashboardPage() {
             <motion.button 
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={handleSubmit}
+              onClick={handleNext}
               disabled={loading}
               className={`group flex items-center gap-3 px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all disabled:opacity-50 ml-auto ${
                 isLight ? 'bg-black text-white hover:bg-[#B9B4FF] hover:text-black' : 'bg-white text-black hover:bg-[#B9B4FF]'
               }`}
             >
-              {loading ? <Loader2 className="animate-spin" size={16} /> : (
-                <>
-                  Crear Evento
-                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
+              Siguiente
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </motion.button>
           </div>
 
         </div>
       </div>
+
+      {/* Form Modal */}
+      <AnimatePresence>
+        {showFormModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              className={`flex flex-col w-full max-w-2xl max-h-[90vh] rounded-[2rem] border overflow-hidden shadow-2xl ${
+                isLight ? 'bg-white border-black/10' : 'bg-[#111114] border-white/10'
+              }`}
+            >
+              <div className="p-6 overflow-y-auto flex-1 no-scrollbar">
+                <h3 className={`text-xl font-bold mb-6 ${isLight ? 'text-black' : 'text-white'}`}>
+                  Configura el Formulario de Registro
+                </h3>
+                <FormBuilder value={formSchema} onChange={setFormSchema} isLight={isLight} />
+              </div>
+              <div className={`p-4 border-t flex justify-end gap-3 ${isLight ? 'border-black/10 bg-black/5' : 'border-white/10 bg-white/5'}`}>
+                <button 
+                  onClick={() => setShowFormModal(false)}
+                  className={`px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all ${
+                    isLight ? 'text-black/60 hover:text-black hover:bg-black/5' : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  Volver
+                </button>
+                <button 
+                  onClick={handleCreateEvent}
+                  disabled={loading}
+                  className={`flex items-center gap-2 px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all disabled:opacity-50 ${
+                    isLight ? 'bg-black text-white hover:bg-[#B9B4FF] hover:text-black' : 'bg-white text-black hover:bg-[#B9B4FF]'
+                  }`}
+                >
+                  {loading ? <Loader2 className="animate-spin" size={14} /> : 'Finalizar Evento'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal de Éxito Animado */}
       <AnimatePresence>
@@ -445,14 +501,14 @@ export default function DashboardPage() {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }} 
               animate={{ scale: 1, y: 0 }} 
               exit={{ scale: 0.9, y: 20 }} 
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={`border p-8 rounded-[2rem] flex flex-col items-center text-center max-w-sm w-full mx-4 shadow-2xl ${
+              className={`border p-8 rounded-[2rem] flex flex-col items-center text-center max-w-sm w-full shadow-2xl ${
                 isLight ? 'bg-white border-black/10' : 'bg-[#111114] border-white/10'
               }`}
             >
@@ -467,11 +523,39 @@ export default function DashboardPage() {
               <h2 className={`text-2xl font-bold mb-2 tracking-tight ${isLight ? 'text-black' : 'text-white'}`}>
                 ¡Evento Creado!
               </h2>
-              <p className={`mb-8 text-sm leading-relaxed ${isLight ? 'text-black/60' : 'text-white/60'}`}>
-                Tu evento ha sido guardado exitosamente. Ahora puedes compartirlo o configurar más detalles.
+              <p className={`mb-6 text-sm leading-relaxed ${isLight ? 'text-black/60' : 'text-white/60'}`}>
+                Tu evento ha sido guardado exitosamente. Comparte el siguiente enlace con tus invitados:
               </p>
+              
+              <div className={`w-full flex items-center gap-2 p-3 mb-8 rounded-xl border ${
+                isLight ? 'bg-black/5 border-black/10' : 'bg-white/5 border-white/10'
+              }`}>
+                <LinkIcon size={16} className={isLight ? 'text-black/40' : 'text-white/40'} />
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={`${window.location.origin}/e/${createdEventId}`} 
+                  className={`flex-1 bg-transparent border-none text-xs outline-none ${isLight ? 'text-black' : 'text-white'}`}
+                />
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/e/${createdEventId}`);
+                    alert("Enlace copiado al portapapeles");
+                  }}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    isLight ? 'hover:bg-black/10 text-black/60 hover:text-black' : 'hover:bg-white/10 text-white/60 hover:text-white'
+                  }`}
+                  title="Copiar enlace"
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
+
               <button 
-                onClick={() => setShowSuccess(false)}
+                onClick={() => {
+                  setShowSuccess(false);
+                  setCreatedEventId(null);
+                }}
                 className={`w-full py-3.5 rounded-xl font-bold uppercase tracking-widest text-[11px] transition-all hover:scale-[1.02] active:scale-[0.98] ${
                   isLight ? 'bg-black text-white hover:bg-[#B9B4FF] hover:text-black' : 'bg-white text-black hover:bg-[#B9B4FF]'
                 }`}
