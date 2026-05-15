@@ -27,5 +27,11 @@ public class User
     [MaxLength(20)]
     public string Role { get; set; } = "User";
 
+    [MaxLength(1000)]
+    public string? AvatarUrl { get; set; }
+
+    [MaxLength(500)]
+    public string? Bio { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

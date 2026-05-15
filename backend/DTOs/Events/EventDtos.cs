@@ -22,6 +22,7 @@ public class CreateEventRequest
     public bool RequiresApproval { get; set; } = false;
     public int? Capacity { get; set; }
     public string? FormSchema { get; set; }
+    public string? SocialLinks { get; set; }
 }
 
 public class EventResponse
@@ -38,5 +39,8 @@ public class EventResponse
     public int? Capacity { get; set; }
     public string? CoverImageUrl { get; set; }
     public string? FormSchema { get; set; }
+    public string? SocialLinks { get; set; }
+    public string? OrganizerAvatarUrl { get; set; }
+    public string? OrganizerBio { get; set; }
     public DateTime CreatedAt { get; set; }
 }

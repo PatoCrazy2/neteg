@@ -42,6 +42,9 @@ public class Event
     [Column(TypeName = "jsonb")]
     public string? FormSchema { get; set; }
 
+    [Column(TypeName = "jsonb")]
+    public string? SocialLinks { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation property for participants

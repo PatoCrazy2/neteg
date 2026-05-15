@@ -28,6 +28,7 @@ public class EventService : IEventService
             RequiresApproval = request.RequiresApproval,
             Capacity = request.Capacity,
             FormSchema = request.FormSchema,
+            SocialLinks = request.SocialLinks,
             UserId = userId,
             CreatedAt = DateTime.UtcNow
         };
@@ -100,6 +101,9 @@ public class EventService : IEventService
             Capacity = e.Capacity,
             CoverImageUrl = e.CoverImageUrl,
             FormSchema = e.FormSchema,
+            SocialLinks = e.SocialLinks,
+            OrganizerAvatarUrl = e.Organizer?.AvatarUrl,
+            OrganizerBio = e.Organizer?.Bio,
             CreatedAt = e.CreatedAt
         };
     }

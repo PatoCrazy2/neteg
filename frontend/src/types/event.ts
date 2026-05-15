@@ -11,6 +11,9 @@ export interface Event {
   capacity?: number;
   coverImageUrl?: string;
   formSchema?: string;
+  socialLinks?: string;
+  organizerAvatarUrl?: string;
+  organizerBio?: string;
   createdAt: string;
 }
 
@@ -23,4 +26,5 @@ export interface CreateEventRequest {
   requiresApproval: boolean;
   capacity?: number;
   formSchema?: string;
+  socialLinks?: string;
 }
