@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, MapPin, Clock, CheckCircle2, Loader2, User, Mail, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Clock, CheckCircle2, Loader2, User, Mail, ChevronRight, Globe, Instagram, Twitter } from "lucide-react";
 import { eventApi } from "@/lib/api";
 import { Event } from "@/types/event";
 
@@ -104,6 +104,9 @@ export default function PublicEventPage() {
     });
   };
 
+  const socialLinks = event?.socialLinks ? JSON.parse(event.socialLinks) : {};
+  const hasSocials = Object.keys(socialLinks).length > 0;
+
   if (loading) return (
     <div className="min-h-screen bg-[#080810] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -146,6 +149,31 @@ export default function PublicEventPage() {
                 className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl"
               >
                 <img src={event.coverImageUrl} alt={event?.name} className="w-full h-full object-cover" />
+              </motion.div>
+            )}
+
+            {/* Event Socials (Desktop) */}
+            {hasSocials && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="hidden lg:flex items-center gap-3"
+              >
+                {socialLinks.website && (
+                  <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
+                    <Globe size={18} />
+                  </a>
+                )}
+                {socialLinks.instagram && (
+                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
+                    <Instagram size={18} />
+                  </a>
+                )}
+                {socialLinks.twitter && (
+                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
+                    <Twitter size={18} />
+                  </a>
+                )}
               </motion.div>
             )}
 
@@ -437,6 +465,27 @@ export default function PublicEventPage() {
                   <p className="text-sm font-bold text-white">{event?.organizerName}</p>
                   {event?.organizerBio && (
                     <p className="text-xs text-white/40 leading-relaxed">{event.organizerBio}</p>
+                  )}
+                  
+                  {/* Mobile Socials */}
+                  {hasSocials && (
+                    <div className="flex items-center gap-2 mt-4">
+                      {socialLinks.website && (
+                        <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-[#B9B4FF]">
+                          <Globe size={14} />
+                        </a>
+                      )}
+                      {socialLinks.instagram && (
+                        <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-[#B9B4FF]">
+                          <Instagram size={14} />
+                        </a>
+                      )}
+                      {socialLinks.twitter && (
+                        <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-[#B9B4FF]">
+                          <Twitter size={14} />
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
