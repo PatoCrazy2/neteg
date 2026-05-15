@@ -54,6 +54,30 @@ export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
         </div>
       </div>
 
+      {/* Link Compartible */}
+      <div className="p-5 rounded-[2rem] bg-white/[0.03] border border-white/5 flex flex-col gap-3">
+        <h4 className="text-sm font-bold text-white px-1">Link de Invitación</h4>
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-black/20 border border-white/10">
+          <ExternalLink className="w-4 h-4 text-white/40" />
+          <input 
+            type="text" 
+            readOnly 
+            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/e/${event.id}`} 
+            className="flex-1 bg-transparent border-none text-xs text-white/80 outline-none truncate"
+          />
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/e/${event.id}`);
+              alert("Enlace copiado al portapapeles");
+            }}
+            className="px-3 py-1.5 rounded-lg bg-[#B9B4FF]/20 hover:bg-[#B9B4FF]/40 text-[#B9B4FF] transition-colors"
+            title="Copiar enlace"
+          >
+            <span className="text-[10px] font-bold uppercase">Copiar</span>
+          </button>
+        </div>
+      </div>
+
       {/* Configuration Status */}
       <div className="flex flex-col gap-3">
         <h4 className="text-sm font-bold text-white px-1">Configuración</h4>

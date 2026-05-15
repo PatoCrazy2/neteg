@@ -77,6 +77,13 @@ public class EventService : IEventService
         return imageUrl;
     }
 
+    public async Task<EventResponse?> GetPublicEventAsync(Guid eventId)
+    {
+        var @event = await _eventRepository.GetByIdAsync(eventId);
+        if (@event == null) return null;
+        return MapToResponse(@event);
+    }
+
     private EventResponse MapToResponse(Event e)
     {
         return new EventResponse

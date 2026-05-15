@@ -94,6 +94,11 @@ export const eventApi = {
     });
     return handleResponse<{ imageUrl: string }>(response);
   },
+
+  getPublicEvent: async (eventId: string): Promise<Event> => {
+    const response = await fetch(`${API_URL}/api/events/${eventId}/public`);
+    return handleResponse<Event>(response);
+  },
 };
 
 // Helper to get stored token

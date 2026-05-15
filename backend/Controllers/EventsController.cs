@@ -50,6 +50,15 @@ public class EventsController : ControllerBase
         return Ok(new { imageUrl });
     }
 
+    [AllowAnonymous]
+    [HttpGet("{id}/public")]
+    public async Task<IActionResult> GetPublicEvent(Guid id)
+    {
+        var eventResult = await _eventService.GetPublicEventAsync(id);
+        if (eventResult == null) return NotFound(new { message = "Evento no encontrado" });
+        return Ok(eventResult);
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
