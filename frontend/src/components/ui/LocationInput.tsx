@@ -66,6 +66,13 @@ export function LocationInput({ value, onChange, isLight }: LocationInputProps) 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Limpiar coordenadas si el valor se borra desde afuera (ej: al resetear el form)
+  useEffect(() => {
+    if (!value) {
+      setCoordinates(null);
+    }
+  }, [value]);
+
   return (
     <div className="space-y-4 w-full relative" ref={containerRef}>
       {/* Estilos globales para el dropdown de Google Maps (PAC container) */}
