@@ -174,65 +174,67 @@ export default function PublicEventPage() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-12 lg:py-20">
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-          
+
           {/* Columna Izquierda: Imagen y Perfil (Desktop) */}
           <div className="w-full lg:col-span-5 space-y-8 lg:sticky lg:top-12">
             {/* Cover image */}
             {event?.coverImageUrl && (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl"
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)]"
               >
-                <img src={event.coverImageUrl} alt={event?.name} className="w-full h-full object-cover" />
+                <img src={event.coverImageUrl} alt={event?.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
               </motion.div>
             )}
 
             {/* Event Socials (Desktop) */}
             {hasSocials && (
               <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="hidden lg:flex items-center gap-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="hidden lg:flex items-center gap-3 px-1"
               >
                 {socialLinks.website && (
-                  <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
-                    <Globe size={18} />
+                  <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all group">
+                    <Globe size={16} />
                   </a>
                 )}
                 {socialLinks.instagram && (
-                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
-                    <Instagram size={18} />
+                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all group">
+                    <Instagram size={16} />
                   </a>
                 )}
                 {socialLinks.twitter && (
-                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
-                    <Twitter size={18} />
+                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all group">
+                    <Twitter size={16} />
                   </a>
                 )}
               </motion.div>
             )}
 
-            {/* Presented By (Desktop Only) */}
+            {/* Presented By (Desktop Only) - SMALLLER & ALIGNED */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="hidden lg:block p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-md"
+              transition={{ delay: 0.6 }}
+              className="hidden lg:block p-6 rounded-[1.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-md relative overflow-hidden group"
             >
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF] mb-6">Presented by</h4>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF]/40 mb-4">Hosted by</h4>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-lg">
                   {event?.organizerAvatarUrl ? (
                     <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
                   ) : (
-                    <User size={20} className="text-white/20" />
+                    <User size={20} className="text-white/10" />
                   )}
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-white">{event?.organizerName}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-white tracking-tight truncate">{event?.organizerName}</p>
                   {event?.organizerBio && (
-                    <p className="text-xs text-white/40 leading-relaxed">{event.organizerBio}</p>
+                    <p className="text-[11px] text-white/30 leading-tight font-medium truncate">{event.organizerBio}</p>
                   )}
                 </div>
               </div>
@@ -248,91 +250,93 @@ export default function PublicEventPage() {
               className="space-y-6"
             >
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-[#B9B4FF]/10 text-[#B9B4FF] text-[10px] font-bold uppercase tracking-widest border border-[#B9B4FF]/20">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 rounded-full bg-[#B9B4FF]/10 text-[#B9B4FF] text-[9px] font-bold uppercase tracking-[0.2em] border border-[#B9B4FF]/20">
                     {event?.isPublic ? "Evento Público" : "Evento Privado"}
                   </span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-[1.1]">{event?.name}</h1>
+                <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-[1.1] max-w-[20ch]">
+                  {event?.name}
+                </h1>
               </div>
 
               {/* Compact Meta */}
-              <div className="flex flex-wrap gap-6 py-6 border-y border-white/5">
+              <div className="flex flex-wrap gap-x-10 gap-y-6 py-6 border-y border-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/10">
                     <Calendar size={18} className="text-[#B9B4FF]" />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Fecha</p>
-                    <p className="text-sm text-white/80">{event?.date ? formatDate(event.date) : ""}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Fecha</p>
+                    <p className="text-xs text-white/80 font-medium">{event?.date ? formatDate(event.date) : ""}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/10">
                     <Clock size={18} className="text-[#B9B4FF]" />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Hora</p>
-                    <p className="text-sm text-white/80">{event?.date ? formatTime(event.date) : ""}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Hora</p>
+                    <p className="text-xs text-white/80 font-medium">{event?.date ? formatTime(event.date) : ""}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event?.location || "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 group transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/10 group-hover:border-[#B9B4FF]/40 group-hover:bg-[#B9B4FF]/5">
                     <MapPin size={18} className="text-[#B9B4FF]" />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Ubicación</p>
-                    <p className="text-sm text-white/80">{event?.location}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Ubicación</p>
+                    <p className="text-xs text-white/80 font-medium group-hover:text-[#B9B4FF] transition-colors">{event?.location}</p>
                   </div>
-                </div>
+                </a>
               </div>
             </motion.div>
 
-            {/* Registration Form */}
+            {/* Registration Form - SMALLER */}
             <AnimatePresence mode="wait">
               {!submitted ? (
                 <motion.div
                   key="form"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 md:p-10 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+                  className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-6 md:p-8 backdrop-blur-2xl relative overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#B9B4FF]/5 rounded-full blur-3xl -mr-16 -mt-16" />
-                  
                   <div className="relative z-10">
-                    <h2 className="text-2xl font-bold text-white mb-2">Reserva tu lugar</h2>
-                    <p className="text-white/40 text-sm mb-10">Completa tus datos para confirmar tu asistencia.</p>
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Registro</h2>
+                        <p className="text-white/40 text-[11px] font-medium">Confirma tu asistencia ahora.</p>
+                      </div>
+                    </div>
 
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {questions.map((q, idx) => (
                         <motion.div
                           key={q.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
                           className="space-y-3"
                         >
-                          <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white/40">
-                            {q.id === "q_name" && <User size={12} className="text-[#B9B4FF]" />}
-                            {q.id === "q_email" && <Mail size={12} className="text-[#B9B4FF]" />}
+                          <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">
                             {q.question}
                             {q.required && <span className="text-[#B9B4FF]">*</span>}
                           </label>
 
-                          {/* Text / Email */}
                           {(q.type === "text" || q.type === "email" || q.type === "paragraph") && (
-                            <div className="relative group">
+                            <div className="relative">
                               {q.type === "paragraph" ? (
                                 <textarea
-                                  rows={4}
+                                  rows={3}
                                   placeholder={`Tu ${q.question.toLowerCase()}...`}
                                   value={answers[q.id] as string}
                                   onChange={e => {
                                     setAnswers({ ...answers, [q.id]: e.target.value });
                                     if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
                                   }}
-                                  className={`w-full bg-white/5 border rounded-2xl px-5 py-4 text-sm text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all resize-none group-hover:bg-white/[0.08] ${errors[q.id] ? "border-red-400/50" : "border-white/10"}`}
+                                  className={`w-full bg-white/[0.03] border rounded-xl px-4 py-3 text-xs text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all resize-none ${errors[q.id] ? "border-red-400/30" : "border-white/10"}`}
                                 />
                               ) : (
                                 <input
@@ -343,82 +347,55 @@ export default function PublicEventPage() {
                                     setAnswers({ ...answers, [q.id]: e.target.value });
                                     if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
                                   }}
-                                  className={`w-full bg-white/5 border rounded-2xl px-5 py-4 text-sm text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all group-hover:bg-white/[0.08] ${errors[q.id] ? "border-red-400/50" : "border-white/10"}`}
+                                  className={`w-full bg-white/[0.03] border rounded-xl px-4 py-3 text-xs text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all ${errors[q.id] ? "border-red-400/30" : "border-white/10"}`}
                                 />
                               )}
                               {errors[q.id] && (
-                                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-1">{errors[q.id]}</p>
+                                <p className="text-red-400 text-[9px] font-bold uppercase tracking-widest mt-1.5 ml-1">{errors[q.id]}</p>
                               )}
                             </div>
                           )}
 
-                          {/* Multiple choice */}
-                          {q.type === "multiple_choice" && q.options && (
-                            <div className="grid grid-cols-1 gap-3">
-                              {q.options.map(opt => (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => {
-                                    setAnswers({ ...answers, [q.id]: opt });
-                                    if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
-                                  }}
-                                  className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm text-left transition-all ${
-                                    answers[q.id] === opt
-                                      ? "bg-[#B9B4FF]/10 border-[#B9B4FF]/40 text-[#B9B4FF] shadow-[0_0_20px_rgba(185,180,255,0.1)]"
-                                      : "bg-white/5 border-white/10 text-white/50 hover:border-white/20 hover:bg-white/[0.08]"
-                                  }`}
-                                >
-                                  <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
-                                    answers[q.id] === opt ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/20"
-                                  }`}>
-                                    {answers[q.id] === opt && <div className="w-1.5 h-1.5 bg-black rounded-full" />}
-                                  </div>
-                                  {opt}
-                                </button>
-                              ))}
-                              {errors[q.id] && (
-                                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-1 ml-1">{errors[q.id]}</p>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Checkbox */}
-                          {q.type === "checkbox" && q.options && (
-                            <div className="grid grid-cols-1 gap-3">
+                          {(q.type === "multiple_choice" || q.type === "checkbox") && q.options && (
+                            <div className="grid grid-cols-1 gap-2">
                               {q.options.map(opt => {
                                 const selected = (answers[q.id] as string[]) || [];
-                                const isChecked = selected.includes(opt);
+                                const isChecked = q.type === "checkbox" ? selected.includes(opt) : answers[q.id] === opt;
                                 return (
                                   <button
                                     key={opt}
                                     type="button"
                                     onClick={() => {
-                                      const current = [...((answers[q.id] as string[]) || [])];
-                                      const idx = current.indexOf(opt);
-                                      if (idx === -1) current.push(opt);
-                                      else current.splice(idx, 1);
-                                      setAnswers({ ...answers, [q.id]: current });
+                                      if (q.type === "checkbox") {
+                                        const current = [...((answers[q.id] as string[]) || [])];
+                                        const idx = current.indexOf(opt);
+                                        if (idx === -1) current.push(opt);
+                                        else current.splice(idx, 1);
+                                        setAnswers({ ...answers, [q.id]: current });
+                                      } else {
+                                        setAnswers({ ...answers, [q.id]: opt });
+                                      }
                                       if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
                                     }}
-                                    className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm text-left transition-all ${
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-[11px] text-left transition-all ${
                                       isChecked
-                                        ? "bg-[#B9B4FF]/10 border-[#B9B4FF]/40 text-[#B9B4FF] shadow-[0_0_20px_rgba(185,180,255,0.1)]"
-                                        : "bg-white/5 border-white/10 text-white/50 hover:border-white/20 hover:bg-white/[0.08]"
+                                        ? "bg-[#B9B4FF]/10 border-[#B9B4FF]/40 text-[#B9B4FF]"
+                                        : "bg-white/[0.02] border-white/5 text-white/40 hover:border-white/20"
                                     }`}
                                   >
-                                    <div className={`w-4 h-4 rounded-md border flex-shrink-0 flex items-center justify-center ${
+                                    <div className={`w-3.5 h-3.5 rounded-${q.type === "checkbox" ? "sm" : "full"} border flex-shrink-0 flex items-center justify-center ${
                                       isChecked ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/20"
                                     }`}>
-                                      {isChecked && <span className="text-black font-bold text-[10px]">✓</span>}
+                                      {isChecked && (
+                                        q.type === "checkbox" ? 
+                                        <span className="text-black font-bold text-[8px]">✓</span> : 
+                                        <div className="w-1 h-1 bg-black rounded-full" />
+                                      )}
                                     </div>
-                                    {opt}
+                                    <span className="truncate">{opt}</span>
                                   </button>
                                 );
                               })}
-                              {errors[q.id] && (
-                                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-1 ml-1">{errors[q.id]}</p>
-                              )}
                             </div>
                           )}
                         </motion.div>
@@ -430,14 +407,14 @@ export default function PublicEventPage() {
                       whileTap={{ scale: 0.99 }}
                       onClick={handleSubmit}
                       disabled={submitting}
-                      className="mt-12 w-full flex items-center justify-center gap-3 py-5 rounded-[1.5rem] bg-[#B9B4FF] text-black font-bold text-xs uppercase tracking-[0.2em] disabled:opacity-50 hover:bg-[#9C8CFF] transition-all shadow-[0_20px_40px_rgba(185,180,255,0.15)]"
+                      className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-[#B9B4FF] text-black font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg"
                     >
                       {submitting ? (
-                        <Loader2 size={18} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin" />
                       ) : (
                         <>
-                          Confirmar Asistencia
-                          <ChevronRight size={16} />
+                          Confirmar Registro
+                          <ChevronRight size={14} />
                         </>
                       )}
                     </motion.button>
@@ -448,20 +425,11 @@ export default function PublicEventPage() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-12 backdrop-blur-xl flex flex-col items-center text-center"
+                  className="bg-white/[0.02] border border-[#B9B4FF]/30 rounded-[2rem] p-12 text-center shadow-xl"
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", delay: 0.1 }}
-                    className="w-24 h-24 rounded-full bg-[#B9B4FF]/20 flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(185,180,255,0.3)]"
-                  >
-                    <CheckCircle2 size={48} className="text-[#B9B4FF]" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">¡Registro Confirmado!</h2>
-                  <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-                    Te has registrado exitosamente a <span className="text-white font-semibold">{event?.name}</span>. Revisa tu correo para más información.
-                  </p>
+                  <CheckCircle2 size={48} className="text-[#B9B4FF] mx-auto mb-6" />
+                  <h2 className="text-2xl font-bold text-white mb-3">¡Confirmado!</h2>
+                  <p className="text-white/40 text-xs max-w-xs mx-auto">Te has registrado exitosamente.</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -471,12 +439,14 @@ export default function PublicEventPage() {
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="space-y-6 pt-12 border-t border-white/5"
+                className="space-y-6 pt-10 border-t border-white/5"
               >
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Acerca de este evento</h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-0.5 h-4 bg-[#B9B4FF]/40 rounded-full" />
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF]/60">Información</h3>
+                </div>
                 <div
-                  className="text-white/60 text-base leading-[1.8] prose prose-invert max-w-none"
+                  className="text-white/50 text-base leading-[1.6] prose prose-invert prose-p:mb-4 max-w-none"
                   dangerouslySetInnerHTML={{ __html: event.description }}
                 />
               </motion.div>
@@ -486,38 +456,38 @@ export default function PublicEventPage() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="lg:hidden p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-md mt-12"
+              className="lg:hidden p-8 rounded-[1.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-md mt-12"
             >
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF] mb-6">Presented by</h4>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF]/60 mb-6">Hosted by</h4>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {event?.organizerAvatarUrl ? (
                     <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
                   ) : (
                     <User size={20} className="text-white/20" />
                   )}
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-white">{event?.organizerName}</p>
+                <div>
+                  <p className="text-sm font-bold text-white tracking-tight">{event?.organizerName}</p>
                   {event?.organizerBio && (
-                    <p className="text-xs text-white/40 leading-relaxed">{event.organizerBio}</p>
+                    <p className="text-xs text-white/30 leading-tight mt-0.5">{event.organizerBio}</p>
                   )}
                   
                   {/* Mobile Socials */}
                   {hasSocials && (
-                    <div className="flex items-center gap-2 mt-4">
+                    <div className="flex items-center gap-2 mt-3">
                       {socialLinks.website && (
-                        <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-[#B9B4FF]">
+                        <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-[#B9B4FF]">
                           <Globe size={14} />
                         </a>
                       )}
                       {socialLinks.instagram && (
-                        <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-[#B9B4FF]">
+                        <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-[#B9B4FF]">
                           <Instagram size={14} />
                         </a>
                       )}
                       {socialLinks.twitter && (
-                        <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-[#B9B4FF]">
+                        <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-[#B9B4FF]">
                           <Twitter size={14} />
                         </a>
                       )}
@@ -531,9 +501,11 @@ export default function PublicEventPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-white/20 text-[10px] uppercase tracking-widest font-bold mt-20 pt-10 border-t border-white/5">
-          Powered by NETEG
-        </p>
+        <div className="mt-24 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
+          <p className="text-white/20 text-[9px] uppercase tracking-[0.3em] font-bold">
+            Powered by NETEG
+          </p>
+        </div>
       </div>
     </div>
   );
