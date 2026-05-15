@@ -15,10 +15,9 @@ public class StorageService : IStorageService
     public StorageService(IAmazonS3 s3Client, IConfiguration configuration)
     {
         _s3Client = s3Client;
-        _bucketName = configuration["S3:BucketName"] ?? "neteg-uploads";
+        _bucketName = configuration["Storage:BucketName"] ?? "neteg-uploads";
         // En desarrollo (MinIO), el endpoint público puede ser diferente al interno de Docker.
-        // Usamos una variable de configuración para la URL que verá el cliente.
-        _publicEndpoint = configuration["S3:PublicEndpoint"] ?? configuration["S3:ServiceUrl"] ?? "http://localhost:9000";
+        _publicEndpoint = configuration["Storage:PublicEndpoint"] ?? configuration["Storage:Endpoint"] ?? "http://localhost:9000";
     }
 
     public async Task<string> UploadFileAsync(IFormFile file, string folder = "uploads")
@@ -59,5 +58,44 @@ public class StorageService : IStorageService
         var key = string.Join('/', pathParts.Skip(1));
 
         await _s3Client.DeleteObjectAsync(_bucketName, key);
+    }
+
+    public async Task EnsureBucketExistsAsync()
+    {
+        try
+        {
+            var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, _bucketName);
+            if (!bucketExists)
+            {
+                // Crear el bucket
+                await _s3Client.PutBucketAsync(new PutBucketRequest
+                {
+                    BucketName = _bucketName,
+                    UseClientRegion = true
+                });
+
+                // Configurar política pública (Lectura para todos)
+                // Esto es necesario para que el navegador pueda mostrar las imágenes
+                var publicPolicy = $@"{{
+                    ""Version"": ""2012-10-17"",
+                    ""Statement"": [
+                        {{
+                            ""Effect"": ""Allow"",
+                            ""Principal"": ""*"",
+                            ""Action"": [""s3:GetObject""],
+                            ""Resource"": [""arn:aws:s3:::{_bucketName}/*""]
+                        }}
+                    ]
+                }}";
+
+                await _s3Client.PutBucketPolicyAsync(_bucketName, publicPolicy);
+            }
+        }
+        catch (Exception ex)
+        {
+            // En producción (R2/S3 real), podrías no tener permisos para crear buckets 
+            // o poner políticas, así que solo logueamos el error.
+            Console.WriteLine($"[StorageService] Error inicializando bucket: {ex.Message}");
+        }
     }
 }

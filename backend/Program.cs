@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Amazon.S3;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,16 +19,16 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 
-// S3 / MinIO Configuration
-var s3Config = builder.Configuration.GetSection("S3");
+// Storage / MinIO Configuration
+var storageConfig = builder.Configuration.GetSection("Storage");
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var config = new AmazonS3Config
     {
-        ServiceURL = s3Config["ServiceUrl"],
+        ServiceURL = storageConfig["Endpoint"],
         ForcePathStyle = true // Requerido para MinIO
     };
-    return new AmazonS3Client(s3Config["AccessKey"], s3Config["SecretKey"], config);
+    return new AmazonS3Client(storageConfig["AccessKey"], storageConfig["SecretKey"], config);
 });
 
 builder.Services.AddCors(options =>
@@ -68,6 +69,13 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Initialize S3 Bucket
+using (var scope = app.Services.CreateScope())
+{
+    var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+    await storageService.EnsureBucketExistsAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

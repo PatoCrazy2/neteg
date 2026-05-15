@@ -43,6 +43,12 @@ public class EventRepository : IEventRepository
         return @event;
     }
 
+    public async Task UpdateAsync(Event @event)
+    {
+        _context.Events.Update(@event);
+        await Task.CompletedTask;
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

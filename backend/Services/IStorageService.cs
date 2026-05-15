@@ -17,4 +17,9 @@ public interface IStorageService
     /// </summary>
     /// <param name="fileUrl">The full URL of the file to delete.</param>
     Task DeleteFileAsync(string fileUrl);
+
+    /// <summary>
+    /// Ensures the required bucket exists and is configured correctly.
+    /// </summary>
+    Task EnsureBucketExistsAsync();
 }

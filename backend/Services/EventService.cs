@@ -22,7 +22,7 @@ public class EventService : IEventService
             Id = Guid.NewGuid(),
             Name = request.Name,
             Description = request.Description,
-            Date = request.Date,
+            Date = DateTime.SpecifyKind(request.Date, DateTimeKind.Utc),
             Location = request.Location,
             IsPublic = request.IsPublic,
             RequiresApproval = request.RequiresApproval,
