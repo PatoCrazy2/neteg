@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, 
   MapPin, 
@@ -15,11 +15,16 @@ import {
   Lock,
   Palette,
   Settings2,
-  Clock
+  Clock,
+  Plus,
+  Minus
 } from "lucide-react";
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
 import { LocationInput } from "@/components/ui/LocationInput";
+import { FormBuilder, FormQuestion } from "@/components/events/FormBuilder";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { TimePicker } from "@/components/ui/TimePicker";
 
 export default function DashboardPage() {
   const { theme, setTheme } = useDashboard();
@@ -37,6 +42,9 @@ export default function DashboardPage() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [formSchema, setFormSchema] = useState<FormQuestion[]>([]);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const isLight = theme === 'light';
 
@@ -52,11 +60,18 @@ export default function DashboardPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!formData.name || !formData.date || !formData.time || !formData.location) {
-      alert("Por favor completa los campos obligatorios (Nombre, Fecha, Hora y Ubicación)");
+    const errors: Record<string, string> = {};
+    if (!formData.name) errors.name = "Requerido";
+    if (!formData.date) errors.date = "Requerido";
+    if (!formData.time) errors.time = "Requerido";
+    if (!formData.location) errors.location = "Requerido";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
-
+    
+    setFormErrors({});
     setLoading(true);
     try {
       // Combinar fecha y hora para el backend
@@ -71,6 +86,11 @@ export default function DashboardPage() {
         requiresApproval: formData.requiresApproval,
         capacity: formData.capacity ? parseInt(formData.capacity) : undefined
       };
+
+      // TODO: Enviar formSchema al backend cuando la columna JSONB esté lista
+      if (formSchema.length > 0) {
+        console.log("📋 FormSchema JSON (listo para JSONB):", JSON.stringify(formSchema, null, 2));
+      }
       
       const createdEvent = await eventApi.createEvent(payload);
 
@@ -79,8 +99,9 @@ export default function DashboardPage() {
         await eventApi.uploadCoverImage(createdEvent.id, selectedFile);
       }
 
-      alert("¡Evento creado con éxito!");
+      setShowSuccess(true);
       
+      setFormSchema([]);
       setFormData({
         name: "",
         date: "",
@@ -109,7 +130,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-5 space-y-8 h-full flex flex-col">
           <div className="space-y-4">
             <div className={`group relative aspect-video w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
-              isLight ? 'bg-black/5 border-black/5 hover:border-black/20' : 'bg-white/[0.03] border-white/5 hover:border-[#B9B4FF]/30'
+              isLight ? 'bg-black/5 border-black/10 hover:border-black/20' : 'bg-white/[0.04] border-white/10 hover:border-[#B9B4FF]/40'
             }`}>
               {previewUrl ? (
                 <img 
@@ -119,7 +140,7 @@ export default function DashboardPage() {
                 />
               ) : (
                 <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
-                  isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
+                  isLight ? 'text-black/20 group-hover:text-black/50' : 'text-white/30 group-hover:text-[#B9B4FF]/60'
                 }`}>
                   <Camera size={24} strokeWidth={1.5} />
                   <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
@@ -150,15 +171,15 @@ export default function DashboardPage() {
                   title="Light Mode"
                   className={`w-6 h-6 rounded-full border transition-all bg-white ${theme === 'light' ? 'ring-2 ring-black scale-110' : 'border-black/10 opacity-50 hover:opacity-100'}`} 
                 />
-                <div className={`h-6 w-px mx-1 ${isLight ? 'bg-black/10' : 'bg-white/10'}`} />
+                <div className={`h-6 w-px mx-1 ${isLight ? 'bg-black/10' : 'bg-white/15'}`} />
                 <button className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold transition-all ${
-                  isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'
+                  isLight ? 'bg-black/5 border-black/10 text-black/50 hover:text-black' : 'bg-white/5 border-white/15 text-white/60 hover:text-white'
                 }`}>
                   <Palette size={12} /> Temas
                 </button>
               </div>
               <button className={`text-[10px] font-bold uppercase tracking-widest transition-all ${
-                isLight ? 'text-black/20 hover:text-black' : 'text-white/20 hover:text-white'
+                isLight ? 'text-black/40 hover:text-black' : 'text-white/40 hover:text-white'
               }`}>
                 Vista Previa
               </button>
@@ -166,17 +187,17 @@ export default function DashboardPage() {
           </div>
 
           <div className={`p-6 rounded-3xl border transition-all duration-500 ${
-            isLight ? 'bg-black/[0.02] border-black/5' : 'bg-white/[0.02] border-white/5'
+            isLight ? 'bg-black/[0.03] border-black/10' : 'bg-white/[0.04] border-white/10'
           }`}>
-            <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 ${isLight ? 'text-black/20' : 'text-white/20'}`}>Estado Actual</h4>
+            <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 ${isLight ? 'text-black/40' : 'text-white/50'}`}>Estado Actual</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className={`text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Estado</p>
+                <p className={`text-[10px] ${isLight ? 'text-black/50' : 'text-white/60'}`}>Estado</p>
                 <p className="text-xs font-medium text-[#B9B4FF]">Borrador</p>
               </div>
               <div className="space-y-1">
-                <p className={`text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Visibilidad</p>
-                <p className={`text-xs font-medium ${isLight ? 'text-black/60' : 'text-white/60'}`}>
+                <p className={`text-[10px] ${isLight ? 'text-black/50' : 'text-white/60'}`}>Visibilidad</p>
+                <p className={`text-xs font-medium ${isLight ? 'text-black/70' : 'text-white/80'}`}>
                   {formData.isPublic ? 'Público' : 'Solo Invitados'}
                 </p>
               </div>
@@ -198,7 +219,7 @@ export default function DashboardPage() {
           
           {/* Metadata Header - Badges Interactivos */}
           <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] ${
-            isLight ? 'text-black/30' : 'text-white/30'
+            isLight ? 'text-black/50' : 'text-white/50'
           }`}>
             <button 
               type="button"
@@ -206,7 +227,7 @@ export default function DashboardPage() {
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${
                 formData.isPublic 
                   ? (isLight ? 'bg-black text-white border-black' : 'bg-[#B9B4FF]/20 border-[#B9B4FF]/40 text-[#B9B4FF]') 
-                  : (isLight ? 'bg-black/5 border-black/5 text-black/30 hover:text-black' : 'bg-white/5 border-white/5 text-white/30 hover:text-white')
+                  : (isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white')
               }`}
             >
               <Globe size={12} className={formData.isPublic ? 'text-[#B9B4FF]' : ''} /> Evento Público
@@ -217,7 +238,7 @@ export default function DashboardPage() {
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${
                 !formData.isPublic 
                   ? (isLight ? 'bg-black text-white border-black' : 'bg-white/10 border-white/20 text-white') 
-                  : (isLight ? 'bg-black/5 border-black/5 text-black/30 hover:text-black' : 'bg-white/5 border-white/5 text-white/30 hover:text-white')
+                  : (isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white')
               }`}
             >
               <Lock size={12} /> Solo Invitados
@@ -230,57 +251,77 @@ export default function DashboardPage() {
               type="text"
               placeholder="Nombre del evento..."
               className={`w-full bg-transparent border-none p-0 text-5xl font-bold focus:outline-none tracking-tight leading-tight transition-colors ${
-                isLight ? 'placeholder:text-black/10 text-black' : 'placeholder:text-white/5 text-white'
-              }`}
+                isLight ? 'placeholder:text-black/20 text-black' : 'placeholder:text-white/25 text-white'
+              } ${formErrors.name ? 'placeholder:text-red-400/50 text-red-400' : ''}`}
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(e) => {
+                setFormData({...formData, name: e.target.value});
+                if (formErrors.name) setFormErrors({...formErrors, name: ''});
+              }}
             />
+            {formErrors.name && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-xs font-bold uppercase tracking-widest">
+                El nombre del evento es obligatorio
+              </motion.p>
+            )}
           </div>
 
           {/* Controles Integrados - Fecha y Hora */}
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
-                isLight ? 'text-black/20' : 'text-white/20'
+                formErrors.date ? 'text-red-400' : (isLight ? 'text-black/50' : 'text-white/50')
               }`}>
                 <Calendar size={12} /> Fecha
               </label>
-              <input 
-                type="date"
-                style={{ colorScheme: isLight ? 'light' : 'dark' }}
-                className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
-                  isLight ? 'text-black/80' : 'text-white/80'
-                }`}
-                value={formData.date}
-                onChange={(e) => setFormData({...formData, date: e.target.value})}
-              />
+              <div className={formErrors.date ? 'ring-1 ring-red-400/50 rounded-lg p-1 -mx-1' : ''}>
+                <DatePicker
+                  value={formData.date}
+                  onChange={(val) => {
+                    setFormData({...formData, date: val});
+                    if (formErrors.date) setFormErrors({...formErrors, date: ''});
+                  }}
+                  isLight={isLight}
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
-                isLight ? 'text-black/20' : 'text-white/20'
+                formErrors.time ? 'text-red-400' : (isLight ? 'text-black/50' : 'text-white/50')
               }`}>
                 <Clock size={12} /> Hora
               </label>
-              <input 
-                type="time"
-                style={{ colorScheme: isLight ? 'light' : 'dark' }}
-                className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
-                  isLight ? 'text-black/80' : 'text-white/80'
-                }`}
-                value={formData.time}
-                onChange={(e) => setFormData({...formData, time: e.target.value})}
-              />
+              <div className={formErrors.time ? 'ring-1 ring-red-400/50 rounded-lg p-1 -mx-1' : ''}>
+                <TimePicker
+                  value={formData.time}
+                  onChange={(val) => {
+                    setFormData({...formData, time: val});
+                    if (formErrors.time) setFormErrors({...formErrors, time: ''});
+                  }}
+                  isLight={isLight}
+                />
+              </div>
             </div>
           </div>
 
           {/* Ubicación (Ancho Completo) */}
           <div className="pt-2">
-            <LocationInput 
-              value={formData.location}
-              onChange={(val) => setFormData({...formData, location: val})}
-              isLight={isLight}
-            />
+            <div className={formErrors.location ? 'ring-1 ring-red-400/50 rounded-lg p-1 -mx-1' : ''}>
+              <LocationInput 
+                value={formData.location}
+                onChange={(val) => {
+                  setFormData({...formData, location: val});
+                  if (formErrors.location) setFormErrors({...formErrors, location: ''});
+                }}
+                isLight={isLight}
+              />
+            </div>
+            {formErrors.location && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-xs font-bold uppercase tracking-widest mt-2">
+                Requerido
+              </motion.p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -293,42 +334,81 @@ export default function DashboardPage() {
               placeholder="¿De qué trata este evento?"
               rows={4}
               className={`w-full bg-transparent border-none p-0 text-[15px] leading-relaxed focus:outline-none transition-all resize-none ${
-                isLight ? 'text-black/60 placeholder:text-black/5' : 'text-white/60 placeholder:text-white/5'
+                isLight ? 'text-black/70 placeholder:text-black/25' : 'text-white/70 placeholder:text-white/25'
               }`}
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
+          {/* Formulario de Registro Dinámico */}
+          <div className={`pt-6 border-t ${isLight ? 'border-black/10' : 'border-white/10'}`}>
+            <FormBuilder value={formSchema} onChange={setFormSchema} isLight={isLight} />
+          </div>
+
           {/* Lista de Preferencias */}
-          <div className={`pt-6 border-t space-y-1 ${isLight ? 'border-black/5' : 'border-white/5'}`}>
+          <div className={`pt-6 border-t space-y-1 ${isLight ? 'border-black/10' : 'border-white/10'}`}>
             <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${
-              isLight ? 'text-black/20' : 'text-white/20'
+              isLight ? 'text-black/50' : 'text-white/50'
             }`}>
               <Settings2 size={12} /> Preferencias
             </h4>
             
             <div className="space-y-1">
-              <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-black/5`}>
+              <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-white/5`}>
                 <div className="flex items-center gap-3">
-                  <Users size={16} className={isLight ? 'text-black/20' : 'text-white/20'} />
-                  <span className={`text-sm ${isLight ? 'text-black/60' : 'text-white/60'}`}>Capacidad (Opcional en DB)</span>
+                  <Users size={16} className={isLight ? 'text-black/40' : 'text-white/40'} />
+                  <span className={`text-sm ${isLight ? 'text-black/70' : 'text-white/70'}`}>Capacidad</span>
                 </div>
-                <input 
-                  type="number"
-                  placeholder="Sin límite"
-                  className={`border rounded-lg px-3 py-1 text-xs w-24 text-right focus:outline-none focus:border-[#B9B4FF]/50 ${
-                    isLight ? 'bg-black/5 border-black/10 text-black' : 'bg-white/5 border-white/10 text-white'
-                  }`}
-                  value={formData.capacity}
-                  onChange={(e) => setFormData({...formData, capacity: e.target.value})}
-                />
+                <div className={`flex items-center gap-1 border rounded-xl overflow-hidden p-1 ${
+                  isLight ? 'bg-black/5 border-black/10' : 'bg-white/5 border-white/10'
+                }`}>
+                  <button 
+                    type="button"
+                    onClick={() => setFormData(prev => ({ 
+                      ...prev, 
+                      capacity: prev.capacity && parseInt(prev.capacity) > 1 ? String(parseInt(prev.capacity) - 1) : "" 
+                    }))}
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
+                      isLight ? 'text-black/60 hover:bg-black/5' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <Minus size={14} />
+                  </button>
+                  
+                  <input 
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="∞"
+                    className={`w-12 h-7 bg-transparent border-none text-center text-xs font-bold focus:outline-none focus:ring-0 ${
+                      isLight ? 'text-black placeholder:text-black/30' : 'text-white placeholder:text-white/30'
+                    }`}
+                    value={formData.capacity}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, ''); // Solo números
+                      setFormData({...formData, capacity: val});
+                    }}
+                  />
+
+                  <button 
+                    type="button"
+                    onClick={() => setFormData(prev => ({ 
+                      ...prev, 
+                      capacity: prev.capacity ? String(parseInt(prev.capacity) + 1) : "1" 
+                    }))}
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
+                      isLight ? 'text-black/60 hover:bg-black/5' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
               </div>
 
-              <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-black/5`}>
+              <div className={`flex items-center justify-between py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-white/5`}>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className={formData.requiresApproval ? 'text-[#B9B4FF]' : (isLight ? 'text-black/20' : 'text-white/20')} />
-                  <span className={`text-sm ${isLight ? 'text-black/60' : 'text-white/60'}`}>Aprobación Manual</span>
+                  <CheckCircle2 size={16} className={formData.requiresApproval ? 'text-[#B9B4FF]' : (isLight ? 'text-black/40' : 'text-white/40')} />
+                  <span className={`text-sm ${isLight ? 'text-black/70' : 'text-white/70'}`}>Aprobación Manual</span>
                 </div>
                 <button 
                   type="button"
@@ -345,13 +425,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Botón de Acción */}
-          <div className="pt-4">
+          <div className="pt-4 flex items-center justify-between">
+            {Object.keys(formErrors).length > 0 && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-xs font-bold uppercase tracking-widest">
+                Faltan campos obligatorios
+              </motion.p>
+            )}
             <motion.button 
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={handleSubmit}
               disabled={loading}
-              className={`group flex items-center gap-3 px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all disabled:opacity-50 ${
+              className={`group flex items-center gap-3 px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all disabled:opacity-50 ml-auto ${
                 isLight ? 'bg-black text-white hover:bg-[#B9B4FF] hover:text-black' : 'bg-white text-black hover:bg-[#B9B4FF]'
               }`}
             >
@@ -366,6 +451,51 @@ export default function DashboardPage() {
 
         </div>
       </div>
+
+      {/* Modal de Éxito Animado */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={`border p-8 rounded-[2rem] flex flex-col items-center text-center max-w-sm w-full mx-4 shadow-2xl ${
+                isLight ? 'bg-white border-black/10' : 'bg-[#111114] border-white/10'
+              }`}
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.15, type: "spring" }}
+                className="w-20 h-20 bg-[#B9B4FF]/20 rounded-full flex items-center justify-center mb-6"
+              >
+                <CheckCircle2 size={40} className="text-[#B9B4FF]" />
+              </motion.div>
+              <h2 className={`text-2xl font-bold mb-2 tracking-tight ${isLight ? 'text-black' : 'text-white'}`}>
+                ¡Evento Creado!
+              </h2>
+              <p className={`mb-8 text-sm leading-relaxed ${isLight ? 'text-black/60' : 'text-white/60'}`}>
+                Tu evento ha sido guardado exitosamente. Ahora puedes compartirlo o configurar más detalles.
+              </p>
+              <button 
+                onClick={() => setShowSuccess(false)}
+                className={`w-full py-3.5 rounded-xl font-bold uppercase tracking-widest text-[11px] transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                  isLight ? 'bg-black text-white hover:bg-[#B9B4FF] hover:text-black' : 'bg-white text-black hover:bg-[#B9B4FF]'
+                }`}
+              >
+                Continuar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

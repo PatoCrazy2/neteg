@@ -70,9 +70,12 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Initialize S3 Bucket
+// Initialize Database and S3 Bucket
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+
     var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
     await storageService.EnsureBucketExistsAsync();
 }
