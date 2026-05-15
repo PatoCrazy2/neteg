@@ -4,15 +4,16 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TimePickerProps {
-  value: string; // formato HH:mm
+  value: string; // formato HH:mm (24h interno)
   onChange: (time: string) => void;
+  selectedDate?: string; // Para validar horas pasadas si es hoy
   isLight: boolean;
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const HOURS_24 = Array.from({ length: 24 }, (_, i) => i);
 const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
 
-export function TimePicker({ value, onChange, isLight }: TimePickerProps) {
+export function TimePicker({ value, onChange, selectedDate, isLight }: TimePickerProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -27,26 +28,38 @@ export function TimePicker({ value, onChange, isLight }: TimePickerProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const [selectedHour, selectedMinute] = value ? value.split(":") : ["", ""];
+  const [selectedHourStr, selectedMinuteStr] = value ? value.split(":") : ["", ""];
+  const selectedHour = selectedHourStr ? parseInt(selectedHourStr, 10) : null;
 
-  const handleHourSelect = (h: string) => {
-    const m = selectedMinute || "00";
-    onChange(`${h}:${m}`);
+  // Lógica de deshabilitado temporal
+  const now = new Date();
+  // Ajustar la fecha actual a la zona horaria local en formato YYYY-MM-DD
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const isToday = selectedDate === todayStr;
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  const handleHourSelect = (h: number) => {
+    const m = selectedMinuteStr || "00";
+    onChange(`${String(h).padStart(2, "0")}:${m}`);
   };
 
-  const handleMinuteSelect = (m: string) => {
-    const h = selectedHour || "12";
-    onChange(`${h}:${m}`);
-    setOpen(false); // Cerramos al seleccionar el minuto (asumiendo que ya eligió la hora)
+  const handleMinuteSelect = (mStr: string) => {
+    const h = selectedHour !== null ? selectedHour : 12;
+    onChange(`${String(h).padStart(2, "0")}:${mStr}`);
+    setOpen(false);
   };
 
-  // Formato legible
-  let displayValue = "";
-  if (value) {
-    const h = parseInt(selectedHour, 10);
+  // Formateador 12 horas
+  const format12H = (h: number) => {
     const ampm = h >= 12 ? "PM" : "AM";
     const displayH = h % 12 || 12;
-    displayValue = `${displayH}:${selectedMinute} ${ampm}`;
+    return `${displayH} ${ampm}`;
+  };
+
+  let displayValue = "";
+  if (selectedHour !== null && selectedMinuteStr) {
+    displayValue = `${format12H(selectedHour).split(" ")[0]}:${selectedMinuteStr} ${format12H(selectedHour).split(" ")[1]}`;
   }
 
   // ── Estilos ──
@@ -83,20 +96,25 @@ export function TimePicker({ value, onChange, isLight }: TimePickerProps) {
             <div className="flex-1">
               <div className={`text-[10px] font-bold uppercase tracking-widest text-center mb-2 ${muted}`}>Hora</div>
               <div className="h-[200px] overflow-y-auto no-scrollbar space-y-1 pr-1">
-                {HOURS.map((h) => {
+                {HOURS_24.map((h) => {
                   const isSelected = h === selectedHour;
+                  const isPast = isToday && h < currentHour;
+                  
                   return (
                     <button
                       key={`h-${h}`}
                       type="button"
+                      disabled={isPast}
                       onClick={() => handleHourSelect(h)}
                       className={`w-full py-2 rounded-xl text-sm font-medium transition-all ${
-                        isSelected
-                          ? "bg-[#B9B4FF] text-black font-bold shadow-lg shadow-[#B9B4FF]/25"
-                          : `${text} ${isLight ? "hover:bg-black/5" : "hover:bg-white/5"}`
+                        isPast
+                          ? `opacity-30 cursor-not-allowed line-through ${muted}`
+                          : isSelected
+                            ? "bg-[#B9B4FF] text-black font-bold shadow-lg shadow-[#B9B4FF]/25"
+                            : `${text} ${isLight ? "hover:bg-black/5" : "hover:bg-white/5"}`
                       }`}
                     >
-                      {h}
+                      {format12H(h)}
                     </button>
                   );
                 })}
@@ -109,20 +127,26 @@ export function TimePicker({ value, onChange, isLight }: TimePickerProps) {
             <div className="flex-1">
               <div className={`text-[10px] font-bold uppercase tracking-widest text-center mb-2 ${muted}`}>Minuto</div>
               <div className="h-[200px] overflow-y-auto no-scrollbar space-y-1 pl-1">
-                {MINUTES.map((m) => {
-                  const isSelected = m === selectedMinute;
+                {MINUTES.map((mStr) => {
+                  const isSelected = mStr === selectedMinuteStr;
+                  // Si estamos en la hora actual de hoy, bloquear los minutos pasados
+                  const isPast = isToday && selectedHour === currentHour && parseInt(mStr, 10) < currentMinute;
+                  
                   return (
                     <button
-                      key={`m-${m}`}
+                      key={`m-${mStr}`}
                       type="button"
-                      onClick={() => handleMinuteSelect(m)}
+                      disabled={isPast}
+                      onClick={() => handleMinuteSelect(mStr)}
                       className={`w-full py-2 rounded-xl text-sm font-medium transition-all ${
-                        isSelected
-                          ? "bg-[#B9B4FF] text-black font-bold shadow-lg shadow-[#B9B4FF]/25"
-                          : `${text} ${isLight ? "hover:bg-black/5" : "hover:bg-white/5"}`
+                        isPast
+                          ? `opacity-30 cursor-not-allowed line-through ${muted}`
+                          : isSelected
+                            ? "bg-[#B9B4FF] text-black font-bold shadow-lg shadow-[#B9B4FF]/25"
+                            : `${text} ${isLight ? "hover:bg-black/5" : "hover:bg-white/5"}`
                       }`}
                     >
-                      {m}
+                      {mStr}
                     </button>
                   );
                 })}

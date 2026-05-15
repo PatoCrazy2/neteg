@@ -295,6 +295,7 @@ export default function DashboardPage() {
               <div className={formErrors.time ? 'ring-1 ring-red-400/50 rounded-lg p-1 -mx-1' : ''}>
                 <TimePicker
                   value={formData.time}
+                  selectedDate={formData.date}
                   onChange={(val) => {
                     setFormData({...formData, time: val});
                     if (formErrors.time) setFormErrors({...formErrors, time: ''});
