@@ -22,7 +22,6 @@ import {
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
 import { LocationInput } from "@/components/ui/LocationInput";
-import { FormBuilder, FormQuestion } from "@/components/events/FormBuilder";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
@@ -43,7 +42,6 @@ export default function DashboardPage() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [formSchema, setFormSchema] = useState<FormQuestion[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -88,11 +86,6 @@ export default function DashboardPage() {
         capacity: formData.capacity ? parseInt(formData.capacity) : undefined
       };
 
-      // TODO: Enviar formSchema al backend cuando la columna JSONB esté lista
-      if (formSchema.length > 0) {
-        console.log("📋 FormSchema JSON (listo para JSONB):", JSON.stringify(formSchema, null, 2));
-      }
-      
       const createdEvent = await eventApi.createEvent(payload);
 
       // Si hay una imagen seleccionada, subirla ahora
@@ -102,7 +95,6 @@ export default function DashboardPage() {
 
       setShowSuccess(true);
       
-      setFormSchema([]);
       setFormData({
         name: "",
         date: "",
@@ -338,11 +330,6 @@ export default function DashboardPage() {
               placeholder="Describe de qué trata este evento. Usa el menú superior para aplicar formato..."
               isLight={isLight}
             />
-          </div>
-
-          {/* Formulario de Registro Dinámico */}
-          <div className={`pt-6 border-t ${isLight ? 'border-black/10' : 'border-white/10'}`}>
-            <FormBuilder value={formSchema} onChange={setFormSchema} isLight={isLight} />
           </div>
 
           {/* Lista de Preferencias */}
