@@ -28,6 +28,17 @@ public class Event
     [ForeignKey("UserId")]
     public User? Organizer { get; set; }
 
+    [Required]
+    public bool IsPublic { get; set; } = true;
+
+    [Required]
+    public bool RequiresApproval { get; set; } = false;
+
+    public int? Capacity { get; set; }
+
+    [MaxLength(1000)]
+    public string? CoverImageUrl { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation property for participants

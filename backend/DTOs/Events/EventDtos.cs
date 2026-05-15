@@ -17,6 +17,10 @@ public class CreateEventRequest
     [Required]
     [MaxLength(500)]
     public string Location { get; set; } = string.Empty;
+
+    public bool IsPublic { get; set; } = true;
+    public bool RequiresApproval { get; set; } = false;
+    public int? Capacity { get; set; }
 }
 
 public class EventResponse
@@ -28,5 +32,9 @@ public class EventResponse
     public string Location { get; set; } = string.Empty;
     public Guid UserId { get; set; }
     public string OrganizerName { get; set; } = string.Empty;
+    public bool IsPublic { get; set; }
+    public bool RequiresApproval { get; set; }
+    public int? Capacity { get; set; }
+    public string? CoverImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 }
