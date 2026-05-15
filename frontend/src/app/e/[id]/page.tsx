@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, MapPin, Clock, CheckCircle2, Loader2, User, Mail, ChevronRight, Globe } from "lucide-react";
+import { TopNavbar } from "@/components/layouts/TopNavbar";
 
 const Instagram = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
   <svg
@@ -130,7 +131,7 @@ export default function PublicEventPage() {
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("es-MX", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
+      weekday: "short", day: "numeric", month: "short"
     });
   };
 
@@ -165,78 +166,78 @@ export default function PublicEventPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#080810] relative overflow-hidden">
+    <div className="min-h-screen bg-[#080810] relative overflow-hidden selection:bg-[#B9B4FF]/30">
+      <TopNavbar />
+      
       {/* Background glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#B9B4FF]/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[150px]" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-12 lg:py-20">
-        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+      <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 pt-28 pb-12 lg:pb-24">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
-          {/* Columna Izquierda: Imagen y Perfil (Desktop) */}
-          <div className="w-full lg:col-span-5 space-y-8 lg:sticky lg:top-12">
+          {/* Columna Izquierda: Imagen y Perfil */}
+          <div className="w-full lg:col-span-5 space-y-10 lg:sticky lg:top-24">
             {/* Cover image */}
             {event?.coverImageUrl && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.98, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)]"
+                className="w-full aspect-[4/5] rounded-2xl overflow-hidden border border-white/5 shadow-2xl"
               >
-                <img src={event.coverImageUrl} alt={event?.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                <img 
+                  src={event.coverImageUrl} 
+                  alt={event?.name} 
+                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105" 
+                />
               </motion.div>
             )}
 
-            {/* Event Socials (Desktop) */}
-            {hasSocials && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="hidden lg:flex items-center gap-3 px-1"
-              >
-                {socialLinks.website && (
-                  <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all group">
-                    <Globe size={16} />
-                  </a>
-                )}
-                {socialLinks.instagram && (
-                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all group">
-                    <Instagram size={16} />
-                  </a>
-                )}
-                {socialLinks.twitter && (
-                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all group">
-                    <Twitter size={16} />
-                  </a>
-                )}
-              </motion.div>
-            )}
-
-            {/* Presented By (Desktop Only) - SMALLLER & ALIGNED */}
+            {/* Presented By Card - COMPACT & INLINE */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="hidden lg:block p-6 rounded-[1.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-md relative overflow-hidden group"
+              transition={{ delay: 0.2 }}
+              className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md"
             >
-              <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF]/40 mb-4">Hosted by</h4>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-lg">
-                  {event?.organizerAvatarUrl ? (
-                    <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
-                  ) : (
-                    <User size={20} className="text-white/10" />
-                  )}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {event?.organizerAvatarUrl ? (
+                      <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={18} className="text-white/20" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-white tracking-tight truncate">{event?.organizerName}</p>
+                    <p className="text-[11px] text-white/30 font-medium truncate">Organizador del evento</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-white tracking-tight truncate">{event?.organizerName}</p>
-                  {event?.organizerBio && (
-                    <p className="text-[11px] text-white/30 leading-tight font-medium truncate">{event.organizerBio}</p>
-                  )}
-                </div>
+
+                {/* Socials Inline */}
+                {hasSocials && (
+                  <div className="flex items-center gap-1">
+                    {socialLinks.instagram && (
+                      <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-white/20 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
+                        <Instagram size={14} />
+                      </a>
+                    )}
+                    {socialLinks.twitter && (
+                      <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-white/20 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
+                        <Twitter size={14} />
+                      </a>
+                    )}
+                    {socialLinks.website && (
+                      <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-white/20 hover:text-[#B9B4FF] hover:bg-[#B9B4FF]/10 transition-all">
+                        <Globe size={14} />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -251,78 +252,58 @@ export default function PublicEventPage() {
             >
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-full bg-[#B9B4FF]/10 text-[#B9B4FF] text-[9px] font-bold uppercase tracking-[0.2em] border border-[#B9B4FF]/20">
-                    {event?.isPublic ? "Evento Público" : "Evento Privado"}
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#B9B4FF]/10 text-[#B9B4FF] text-[10px] font-bold uppercase tracking-widest border border-[#B9B4FF]/20">
+                    {event?.isPublic ? "Público" : "Privado"}
                   </span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-[1.1] max-w-[20ch]">
+                <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.1] max-w-[18ch]">
                   {event?.name}
                 </h1>
               </div>
 
-              {/* Compact Meta */}
-              <div className="flex flex-wrap gap-x-10 gap-y-6 py-6 border-y border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/10">
-                    <Calendar size={18} className="text-[#B9B4FF]" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Fecha</p>
-                    <p className="text-xs text-white/80 font-medium">{event?.date ? formatDate(event.date) : ""}</p>
-                  </div>
+              {/* Metadata Info Pills */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px] text-white/50 font-medium">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.03] border border-white/5">
+                  <Calendar size={14} className="text-[#B9B4FF]/60" />
+                  <span>{event?.date ? formatDate(event.date) : ""}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/10">
-                    <Clock size={18} className="text-[#B9B4FF]" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Hora</p>
-                    <p className="text-xs text-white/80 font-medium">{event?.date ? formatTime(event.date) : ""}</p>
-                  </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.03] border border-white/5">
+                  <Clock size={14} className="text-[#B9B4FF]/60" />
+                  <span>{event?.date ? formatTime(event.date) : ""}</span>
                 </div>
                 <a 
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event?.location || "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 group transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:text-white transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/10 group-hover:border-[#B9B4FF]/40 group-hover:bg-[#B9B4FF]/5">
-                    <MapPin size={18} className="text-[#B9B4FF]" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Ubicación</p>
-                    <p className="text-xs text-white/80 font-medium group-hover:text-[#B9B4FF] transition-colors">{event?.location}</p>
-                  </div>
+                  <MapPin size={14} className="text-[#B9B4FF]/60 group-hover:text-[#B9B4FF]" />
+                  <span>{event?.location}</span>
                 </a>
               </div>
             </motion.div>
 
-            {/* Registration Form - SMALLER */}
+            {/* Registration Form */}
             <AnimatePresence mode="wait">
               {!submitted ? (
                 <motion.div
                   key="form"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-6 md:p-8 backdrop-blur-2xl relative overflow-hidden"
+                  className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 md:p-8 backdrop-blur-2xl relative overflow-hidden"
                 >
                   <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <h2 className="text-xl font-bold text-white tracking-tight">Registro</h2>
-                        <p className="text-white/40 text-[11px] font-medium">Confirma tu asistencia ahora.</p>
-                      </div>
+                    <div className="mb-8">
+                      <h2 className="text-xl font-bold text-white tracking-tight">Registro</h2>
+                      <p className="text-white/30 text-[12px] font-medium mt-1">Completa tus datos para confirmar asistencia.</p>
                     </div>
 
-                    <div className="space-y-6">
-                      {questions.map((q, idx) => (
-                        <motion.div
-                          key={q.id}
-                          className="space-y-3"
-                        >
-                          <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">
+                    <div className="space-y-5">
+                      {questions.map((q) => (
+                        <div key={q.id} className="space-y-1.5">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-white/30 ml-1">
                             {q.question}
-                            {q.required && <span className="text-[#B9B4FF]">*</span>}
+                            {q.required && <span className="text-[#B9B4FF] ml-1">*</span>}
                           </label>
 
                           {(q.type === "text" || q.type === "email" || q.type === "paragraph") && (
@@ -336,7 +317,7 @@ export default function PublicEventPage() {
                                     setAnswers({ ...answers, [q.id]: e.target.value });
                                     if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
                                   }}
-                                  className={`w-full bg-white/[0.03] border rounded-xl px-4 py-3 text-xs text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all resize-none ${errors[q.id] ? "border-red-400/30" : "border-white/10"}`}
+                                  className={`w-full bg-white/[0.03] border rounded-xl px-4 py-2.5 text-[13px] text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/20 transition-all resize-none ${errors[q.id] ? "border-red-400/30" : "border-white/5 hover:border-white/10"}`}
                                 />
                               ) : (
                                 <input
@@ -347,17 +328,17 @@ export default function PublicEventPage() {
                                     setAnswers({ ...answers, [q.id]: e.target.value });
                                     if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
                                   }}
-                                  className={`w-full bg-white/[0.03] border rounded-xl px-4 py-3 text-xs text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all ${errors[q.id] ? "border-red-400/30" : "border-white/10"}`}
+                                  className={`w-full bg-white/[0.03] border rounded-xl px-4 py-2.5 text-[13px] text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/20 transition-all ${errors[q.id] ? "border-red-400/30" : "border-white/5 hover:border-white/10"}`}
                                 />
                               )}
                               {errors[q.id] && (
-                                <p className="text-red-400 text-[9px] font-bold uppercase tracking-widest mt-1.5 ml-1">{errors[q.id]}</p>
+                                <p className="text-red-400 text-[10px] font-medium mt-1.5 ml-1">{errors[q.id]}</p>
                               )}
                             </div>
                           )}
 
                           {(q.type === "multiple_choice" || q.type === "checkbox") && q.options && (
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="flex flex-wrap gap-2 pt-1">
                               {q.options.map(opt => {
                                 const selected = (answers[q.id] as string[]) || [];
                                 const isChecked = q.type === "checkbox" ? selected.includes(opt) : answers[q.id] === opt;
@@ -377,28 +358,19 @@ export default function PublicEventPage() {
                                       }
                                       if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
                                     }}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-[11px] text-left transition-all ${
+                                    className={`px-4 py-2 rounded-full border text-[12px] font-medium transition-all ${
                                       isChecked
                                         ? "bg-[#B9B4FF]/10 border-[#B9B4FF]/40 text-[#B9B4FF]"
                                         : "bg-white/[0.02] border-white/5 text-white/40 hover:border-white/20"
                                     }`}
                                   >
-                                    <div className={`w-3.5 h-3.5 rounded-${q.type === "checkbox" ? "sm" : "full"} border flex-shrink-0 flex items-center justify-center ${
-                                      isChecked ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/20"
-                                    }`}>
-                                      {isChecked && (
-                                        q.type === "checkbox" ? 
-                                        <span className="text-black font-bold text-[8px]">✓</span> : 
-                                        <div className="w-1 h-1 bg-black rounded-full" />
-                                      )}
-                                    </div>
-                                    <span className="truncate">{opt}</span>
+                                    {opt}
                                   </button>
                                 );
                               })}
                             </div>
                           )}
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
 
@@ -407,7 +379,7 @@ export default function PublicEventPage() {
                       whileTap={{ scale: 0.99 }}
                       onClick={handleSubmit}
                       disabled={submitting}
-                      className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-[#B9B4FF] text-black font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg"
+                      className="mt-10 h-11 w-full flex items-center justify-center gap-2 rounded-xl bg-[#B9B4FF] text-black font-semibold text-[13px] transition-all hover:bg-[#A8A2FF] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitting ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -425,11 +397,13 @@ export default function PublicEventPage() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/[0.02] border border-[#B9B4FF]/30 rounded-[2rem] p-12 text-center shadow-xl"
+                  className="bg-white/[0.02] border border-[#B9B4FF]/30 rounded-3xl p-12 text-center"
                 >
-                  <CheckCircle2 size={48} className="text-[#B9B4FF] mx-auto mb-6" />
-                  <h2 className="text-2xl font-bold text-white mb-3">¡Confirmado!</h2>
-                  <p className="text-white/40 text-xs max-w-xs mx-auto">Te has registrado exitosamente.</p>
+                  <div className="w-16 h-16 rounded-full bg-[#B9B4FF]/10 flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 size={32} className="text-[#B9B4FF]" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">¡Todo listo!</h2>
+                  <p className="text-white/40 text-sm max-w-xs mx-auto">Tu registro ha sido procesado correctamente. Nos vemos en el evento.</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -439,70 +413,24 @@ export default function PublicEventPage() {
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="space-y-6 pt-10 border-t border-white/5"
+                className="space-y-6"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-0.5 h-4 bg-[#B9B4FF]/40 rounded-full" />
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF]/60">Información</h3>
+                  <div className="w-0.5 h-3 bg-[#B9B4FF]/60 rounded-full" />
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/30">Información</h3>
                 </div>
                 <div
-                  className="text-white/50 text-base leading-[1.6] prose prose-invert prose-p:mb-4 max-w-none"
+                  className="text-white/50 text-[14px] leading-[1.7] prose prose-invert prose-p:mb-4 max-w-none font-medium"
                   dangerouslySetInnerHTML={{ __html: event.description }}
                 />
               </motion.div>
             )}
-
-            {/* Presented By (Mobile Only) */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="lg:hidden p-8 rounded-[1.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-md mt-12"
-            >
-              <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF]/60 mb-6">Hosted by</h4>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {event?.organizerAvatarUrl ? (
-                    <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
-                  ) : (
-                    <User size={20} className="text-white/20" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white tracking-tight">{event?.organizerName}</p>
-                  {event?.organizerBio && (
-                    <p className="text-xs text-white/30 leading-tight mt-0.5">{event.organizerBio}</p>
-                  )}
-                  
-                  {/* Mobile Socials */}
-                  {hasSocials && (
-                    <div className="flex items-center gap-2 mt-3">
-                      {socialLinks.website && (
-                        <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-[#B9B4FF]">
-                          <Globe size={14} />
-                        </a>
-                      )}
-                      {socialLinks.instagram && (
-                        <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-[#B9B4FF]">
-                          <Instagram size={14} />
-                        </a>
-                      )}
-                      {socialLinks.twitter && (
-                        <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-[#B9B4FF]">
-                          <Twitter size={14} />
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
           </div>
-
         </div>
 
         {/* Footer */}
-        <div className="mt-24 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
-          <p className="text-white/20 text-[9px] uppercase tracking-[0.3em] font-bold">
+        <div className="mt-32 pt-8 border-t border-white/5 flex flex-col items-center">
+          <p className="text-white/10 text-[10px] uppercase tracking-[0.4em] font-bold">
             Powered by NETEG
           </p>
         </div>
