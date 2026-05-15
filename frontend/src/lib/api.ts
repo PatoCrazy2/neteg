@@ -63,6 +63,21 @@ export const eventApi = {
     });
     return handleResponse<Event>(response);
   },
+
+  uploadCoverImage: async (eventId: string, file: File): Promise<{ imageUrl: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const token = getToken();
+    const response = await fetch(`${API_URL}/api/events/${eventId}/cover`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    return handleResponse<{ imageUrl: string }>(response);
+  },
 };
 
 // Helper to get stored token

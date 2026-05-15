@@ -35,7 +35,19 @@ export default function DashboardPage() {
     isPublic: true,
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const isLight = theme === 'light';
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -54,10 +66,19 @@ export default function DashboardPage() {
         name: formData.name,
         description: formData.description,
         date: combinedDateTime,
-        location: formData.location
+        location: formData.location,
+        isPublic: formData.isPublic,
+        requiresApproval: formData.requiresApproval,
+        capacity: formData.capacity ? parseInt(formData.capacity) : undefined
       };
       
-      await eventApi.createEvent(payload);
+      const createdEvent = await eventApi.createEvent(payload);
+
+      // Si hay una imagen seleccionada, subirla ahora
+      if (selectedFile) {
+        await eventApi.uploadCoverImage(createdEvent.id, selectedFile);
+      }
+
       alert("¡Evento creado con éxito!");
       
       setFormData({
@@ -70,6 +91,8 @@ export default function DashboardPage() {
         requiresApproval: false,
         isPublic: true,
       });
+      setSelectedFile(null);
+      setPreviewUrl(null);
     } catch (error) {
       console.error("Error creating event", error);
       alert(`Error al crear el evento: ${error instanceof Error ? error.message : 'Error desconocido'}`);
@@ -88,13 +111,26 @@ export default function DashboardPage() {
             <div className={`group relative aspect-video w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
               isLight ? 'bg-black/5 border-black/5 hover:border-black/20' : 'bg-white/[0.03] border-white/5 hover:border-[#B9B4FF]/30'
             }`}>
-              <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
-                isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
-              }`}>
-                <Camera size={24} strokeWidth={1.5} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
-              </div>
-              <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+              {previewUrl ? (
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
+                  isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
+                }`}>
+                  <Camera size={24} strokeWidth={1.5} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
+                </div>
+              )}
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 opacity-0 cursor-pointer" 
+              />
             </div>
 
             <div className="flex items-center justify-between px-2">

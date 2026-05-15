@@ -6,6 +6,10 @@ export interface Event {
   location: string;
   userId: string;
   organizerName: string;
+  isPublic: boolean;
+  requiresApproval: boolean;
+  capacity?: number;
+  coverImageUrl?: string;
   createdAt: string;
 }
 
@@ -14,4 +18,7 @@ export interface CreateEventRequest {
   description?: string;
   date: string;
   location: string;
+  isPublic: boolean;
+  requiresApproval: boolean;
+  capacity?: number;
 }
