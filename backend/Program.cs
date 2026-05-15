@@ -16,6 +16,19 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IStorageService, StorageService>();
+
+// S3 / MinIO Configuration
+var s3Config = builder.Configuration.GetSection("S3");
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var config = new AmazonS3Config
+    {
+        ServiceURL = s3Config["ServiceUrl"],
+        ForcePathStyle = true // Requerido para MinIO
+    };
+    return new AmazonS3Client(s3Config["AccessKey"], s3Config["SecretKey"], config);
+});
 
 builder.Services.AddCors(options =>
 {
