@@ -39,6 +39,9 @@ public class Event
     [MaxLength(1000)]
     public string? CoverImageUrl { get; set; }
 
+    [Column(TypeName = "jsonb")]
+    public string? FormSchema { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation property for participants

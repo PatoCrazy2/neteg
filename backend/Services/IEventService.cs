@@ -8,4 +8,5 @@ public interface IEventService
     Task<IEnumerable<EventResponse>> GetUserEventsAsync(Guid userId);
     Task<IEnumerable<EventResponse>> GetParticipatingEventsAsync(Guid userId);
     Task<string> UploadCoverImageAsync(Guid eventId, IFormFile file, Guid userId);
+    Task<EventResponse?> GetPublicEventAsync(Guid eventId);
 }

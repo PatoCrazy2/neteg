@@ -10,6 +10,7 @@ export interface Event {
   requiresApproval: boolean;
   capacity?: number;
   coverImageUrl?: string;
+  formSchema?: string;
   createdAt: string;
 }
 
@@ -21,4 +22,5 @@ export interface CreateEventRequest {
   isPublic: boolean;
   requiresApproval: boolean;
   capacity?: number;
+  formSchema?: string;
 }

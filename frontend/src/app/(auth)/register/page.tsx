@@ -164,9 +164,10 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Juan Pérez"
-                  className="w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border border-white/[0.12] focus:ring-2 focus:ring-primary/40 focus:outline-none"
+                  className={`w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border ${errors.name ? 'border-red-500' : 'border-white/[0.12]'} focus:ring-2 focus:ring-primary/40 focus:outline-none`}
                   disabled={isLoading}
                 />
+                {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -176,9 +177,10 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tucorreo@ejemplo.com"
-                  className="w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border border-white/[0.12] focus:ring-2 focus:ring-primary/40 focus:outline-none"
+                  className={`w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border ${errors.email ? 'border-red-500' : 'border-white/[0.12]'} focus:ring-2 focus:ring-primary/40 focus:outline-none`}
                   disabled={isLoading}
                 />
+                {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -188,9 +190,10 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="********"
-                  className="w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border border-white/[0.12] focus:ring-2 focus:ring-primary/40 focus:outline-none"
+                  className={`w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border ${errors.password ? 'border-red-500' : 'border-white/[0.12]'} focus:ring-2 focus:ring-primary/40 focus:outline-none`}
                   disabled={isLoading}
                 />
+                {errors.password && <p className="text-xs text-red-400 mt-1">{errors.password}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -200,9 +203,10 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="********"
-                  className="w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border border-white/[0.12] focus:ring-2 focus:ring-primary/40 focus:outline-none"
+                  className={`w-full h-11 px-3 rounded-lg text-sm text-white bg-transparent border ${errors.confirm ? 'border-red-500' : 'border-white/[0.12]'} focus:ring-2 focus:ring-primary/40 focus:outline-none`}
                   disabled={isLoading}
                 />
+                {errors.confirm && <p className="text-xs text-red-400 mt-1">{errors.confirm}</p>}
               </div>
 
               <button
