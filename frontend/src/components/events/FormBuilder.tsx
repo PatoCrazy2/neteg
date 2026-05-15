@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, GripVertical, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -28,10 +28,13 @@ const DEFAULT_QUESTIONS: FormQuestion[] = [
 
 export function FormBuilder({ value, onChange, isLight }: FormBuilderProps) {
   // Inicializamos con los campos obligatorios si está vacío
-  if (value.length === 0) {
-    onChange(DEFAULT_QUESTIONS);
-    return null;
-  }
+  useEffect(() => {
+    if (value.length === 0) {
+      onChange(DEFAULT_QUESTIONS);
+    }
+  }, [value.length, onChange]);
+
+  if (value.length === 0) return null;
 
   const addQuestion = (type: QuestionType) => {
     const newQuestion: FormQuestion = {
