@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
+import { LocationInput } from "@/components/ui/LocationInput";
 
 export default function DashboardPage() {
   const { theme, setTheme } = useDashboard();
@@ -78,19 +79,19 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-6 transition-colors duration-700">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+    <div className="h-[calc(100vh-64px)] w-full flex justify-center p-8 lg:p-12 transition-colors duration-700 overflow-hidden">
+      <div className="w-full max-w-6xl h-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
         
-        {/* Columna Izquierda: Panel Visual (40%) */}
-        <div className="lg:col-span-5 space-y-8 sticky top-0">
+        {/* Columna Izquierda: Panel Visual (40%) - Fijo */}
+        <div className="lg:col-span-5 space-y-8 h-full flex flex-col">
           <div className="space-y-4">
-            <div className={`group relative aspect-[4/5] w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
+            <div className={`group relative aspect-video w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
               isLight ? 'bg-black/5 border-black/5 hover:border-black/20' : 'bg-white/[0.03] border-white/5 hover:border-[#B9B4FF]/30'
             }`}>
               <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
                 isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
               }`}>
-                <Camera size={32} strokeWidth={1.5} />
+                <Camera size={24} strokeWidth={1.5} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
               </div>
               <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
@@ -100,8 +101,8 @@ export default function DashboardPage() {
               <div className="flex gap-2">
                 <button 
                   onClick={() => setTheme('default')}
-                  title="Default (Plasma)"
-                  className={`w-6 h-6 rounded-full border transition-all bg-[#B9B4FF] ${theme === 'default' ? 'ring-2 ring-white scale-110' : 'border-white/10 opacity-50 hover:opacity-100'}`} 
+                  title="Plasma Theme"
+                  className={`w-6 h-6 rounded-full border transition-all bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 ${theme === 'default' ? 'ring-2 ring-[#B9B4FF] scale-110' : 'border-white/10 opacity-50 hover:opacity-100'}`} 
                 />
                 <button 
                   onClick={() => setTheme('black')}
@@ -128,8 +129,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className={`p-6 rounded-2xl border transition-all ${
-            isLight ? 'bg-black/5 border-black/5' : 'bg-white/[0.02] border-white/5'
+          <div className={`p-6 rounded-3xl border transition-all duration-500 ${
+            isLight ? 'bg-black/[0.02] border-black/5' : 'bg-white/[0.02] border-white/5'
           }`}>
             <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 ${isLight ? 'text-black/20' : 'text-white/20'}`}>Estado Actual</h4>
             <div className="grid grid-cols-2 gap-4">
@@ -147,8 +148,17 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Columna Derecha: Configuración (60%) */}
-        <div className="lg:col-span-7 space-y-10">
+        {/* Columna Derecha: Configuración (60%) - Con Scroll */}
+        <div className="lg:col-span-7 space-y-8 h-full overflow-y-auto pr-6 pb-20 no-scrollbar">
+          <style jsx>{`
+            .no-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+            .no-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
           
           {/* Metadata Header - Badges Interactivos */}
           <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] ${
@@ -191,9 +201,9 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Controles Integrados - Fecha y Hora Separados */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-6">
-            <div className="md:col-span-4 space-y-1.5">
+          {/* Controles Integrados - Fecha y Hora */}
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
                 isLight ? 'text-black/20' : 'text-white/20'
               }`}>
@@ -210,7 +220,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="md:col-span-3 space-y-1.5">
+            <div className="space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
                 isLight ? 'text-black/20' : 'text-white/20'
               }`}>
@@ -226,23 +236,15 @@ export default function DashboardPage() {
                 onChange={(e) => setFormData({...formData, time: e.target.value})}
               />
             </div>
+          </div>
 
-            <div className="md:col-span-5 space-y-1.5">
-              <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
-                isLight ? 'text-black/20' : 'text-white/20'
-              }`}>
-                <MapPin size={12} /> Ubicación
-              </label>
-              <input 
-                type="text"
-                placeholder="Dirección o link"
-                className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
-                  isLight ? 'text-black/80 placeholder:text-black/10' : 'text-white/80 placeholder:text-white/10'
-                }`}
-                value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
-              />
-            </div>
+          {/* Ubicación (Ancho Completo) */}
+          <div className="pt-2">
+            <LocationInput 
+              value={formData.location}
+              onChange={(val) => setFormData({...formData, location: val})}
+              isLight={isLight}
+            />
           </div>
 
           <div className="space-y-2">
