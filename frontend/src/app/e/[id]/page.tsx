@@ -133,232 +133,320 @@ export default function PublicEventPage() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[150px]" />
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-12">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-12 lg:py-20">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+          
+          {/* Columna Izquierda: Imagen y Perfil (Desktop) */}
+          <div className="w-full lg:col-span-5 space-y-8 lg:sticky lg:top-12">
+            {/* Cover image */}
+            {event?.coverImageUrl && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl"
+              >
+                <img src={event.coverImageUrl} alt={event?.name} className="w-full h-full object-cover" />
+              </motion.div>
+            )}
 
-        {/* Event Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
-        >
-          {/* Cover image */}
-          {event?.coverImageUrl && (
-            <div className="w-full aspect-video rounded-[2rem] overflow-hidden mb-8 border border-white/10 shadow-2xl">
-              <img src={event.coverImageUrl} alt={event?.name} className="w-full h-full object-cover" />
-            </div>
-          )}
-
-          {/* Event meta */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="px-3 py-1 rounded-full bg-[#B9B4FF]/20 text-[#B9B4FF] text-[10px] font-bold uppercase tracking-widest border border-[#B9B4FF]/30">
-              {event?.isPublic ? "Evento Público" : "Evento Privado"}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-white/5 text-white/50 text-[10px] font-bold uppercase tracking-widest border border-white/10">
-              Organizado por {event?.organizerName}
-            </span>
-          </div>
-
-          <h1 className="text-4xl font-bold text-white tracking-tight mb-4">{event?.name}</h1>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3 text-white/50 text-sm">
-              <Calendar size={16} className="text-[#B9B4FF]" />
-              <span>{event?.date ? formatDate(event.date) : ""}</span>
-            </div>
-            <div className="flex items-center gap-3 text-white/50 text-sm">
-              <Clock size={16} className="text-[#B9B4FF]" />
-              <span>{event?.date ? formatTime(event.date) : ""}</span>
-            </div>
-            <div className="flex items-center gap-3 text-white/50 text-sm">
-              <MapPin size={16} className="text-[#B9B4FF]" />
-              <span>{event?.location}</span>
-            </div>
-          </div>
-
-          {event?.description && (
-            <div
-              className="mt-6 text-white/60 text-sm leading-relaxed border-t border-white/5 pt-6"
-              dangerouslySetInnerHTML={{ __html: event.description }}
-            />
-          )}
-        </motion.div>
-
-        {/* Registration Form */}
-        <AnimatePresence mode="wait">
-          {!submitted ? (
-            <motion.div
-              key="form"
+            {/* Presented By (Desktop Only) */}
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-8 backdrop-blur-xl"
+              transition={{ delay: 0.2 }}
+              className="hidden lg:block p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-md"
             >
-              <h2 className="text-xl font-bold text-white mb-2">Regístrate al Evento</h2>
-              <p className="text-white/40 text-sm mb-8">Completa el formulario para confirmar tu asistencia.</p>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF] mb-6">Presented by</h4>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {event?.organizerAvatarUrl ? (
+                    <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={20} className="text-white/20" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-white">{event?.organizerName}</p>
+                  {event?.organizerBio && (
+                    <p className="text-xs text-white/40 leading-relaxed">{event.organizerBio}</p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
 
-              <div className="space-y-6">
-                {questions.map((q, idx) => (
-                  <motion.div
-                    key={q.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="space-y-2"
-                  >
-                    <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white/50">
-                      {q.id === "q_name" && <User size={12} className="text-[#B9B4FF]" />}
-                      {q.id === "q_email" && <Mail size={12} className="text-[#B9B4FF]" />}
-                      {q.question}
-                      {q.required && <span className="text-[#B9B4FF]">*</span>}
-                    </label>
-
-                    {/* Text / Email */}
-                    {(q.type === "text" || q.type === "email" || q.type === "paragraph") && (
-                      <div>
-                        {q.type === "paragraph" ? (
-                          <textarea
-                            rows={3}
-                            placeholder={`Tu ${q.question.toLowerCase()}...`}
-                            value={answers[q.id] as string}
-                            onChange={e => {
-                              setAnswers({ ...answers, [q.id]: e.target.value });
-                              if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
-                            }}
-                            className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:ring-1 focus:ring-[#B9B4FF]/50 transition-all resize-none ${errors[q.id] ? "border-red-400/50" : "border-white/10"}`}
-                          />
-                        ) : (
-                          <input
-                            type={q.type}
-                            placeholder={`Tu ${q.question.toLowerCase()}...`}
-                            value={answers[q.id] as string}
-                            onChange={e => {
-                              setAnswers({ ...answers, [q.id]: e.target.value });
-                              if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
-                            }}
-                            className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:ring-1 focus:ring-[#B9B4FF]/50 transition-all ${errors[q.id] ? "border-red-400/50" : "border-white/10"}`}
-                          />
-                        )}
-                        {errors[q.id] && (
-                          <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-1">{errors[q.id]}</p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Multiple choice */}
-                    {q.type === "multiple_choice" && q.options && (
-                      <div className="space-y-2">
-                        {q.options.map(opt => (
-                          <button
-                            key={opt}
-                            type="button"
-                            onClick={() => {
-                              setAnswers({ ...answers, [q.id]: opt });
-                              if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
-                            }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all ${
-                              answers[q.id] === opt
-                                ? "bg-[#B9B4FF]/20 border-[#B9B4FF]/50 text-[#B9B4FF]"
-                                : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
-                            }`}
-                          >
-                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
-                              answers[q.id] === opt ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/30"
-                            }`}>
-                              {answers[q.id] === opt && <div className="w-1.5 h-1.5 bg-black rounded-full" />}
-                            </div>
-                            {opt}
-                          </button>
-                        ))}
-                        {errors[q.id] && (
-                          <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{errors[q.id]}</p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Checkbox */}
-                    {q.type === "checkbox" && q.options && (
-                      <div className="space-y-2">
-                        {q.options.map(opt => {
-                          const selected = (answers[q.id] as string[]) || [];
-                          const isChecked = selected.includes(opt);
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => {
-                                const current = [...((answers[q.id] as string[]) || [])];
-                                const idx = current.indexOf(opt);
-                                if (idx === -1) current.push(opt);
-                                else current.splice(idx, 1);
-                                setAnswers({ ...answers, [q.id]: current });
-                                if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
-                              }}
-                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all ${
-                                isChecked
-                                  ? "bg-[#B9B4FF]/20 border-[#B9B4FF]/50 text-[#B9B4FF]"
-                                  : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
-                              }`}
-                            >
-                              <div className={`w-4 h-4 rounded-sm border flex-shrink-0 flex items-center justify-center ${
-                                isChecked ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/30"
-                              }`}>
-                                {isChecked && <span className="text-black font-bold text-[10px]">✓</span>}
-                              </div>
-                              {opt}
-                            </button>
-                          );
-                        })}
-                        {errors[q.id] && (
-                          <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{errors[q.id]}</p>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+          {/* Columna Derecha: Información y Registro */}
+          <div className="w-full lg:col-span-7 space-y-12">
+            {/* Event Header */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-6"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-[#B9B4FF]/10 text-[#B9B4FF] text-[10px] font-bold uppercase tracking-widest border border-[#B9B4FF]/20">
+                    {event?.isPublic ? "Evento Público" : "Evento Privado"}
+                  </span>
+                </div>
+                <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-[1.1]">{event?.name}</h1>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#B9B4FF] text-black font-bold text-sm uppercase tracking-widest disabled:opacity-50 hover:bg-[#9C8CFF] transition-all shadow-[0_0_20px_rgba(185,180,255,0.3)]"
-              >
-                {submitting ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <>
-                    Confirmar Asistencia
-                    <ChevronRight size={16} />
-                  </>
-                )}
-              </motion.button>
+              {/* Compact Meta */}
+              <div className="flex flex-wrap gap-6 py-6 border-y border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <Calendar size={18} className="text-[#B9B4FF]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Fecha</p>
+                    <p className="text-sm text-white/80">{event?.date ? formatDate(event.date) : ""}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <Clock size={18} className="text-[#B9B4FF]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Hora</p>
+                    <p className="text-sm text-white/80">{event?.date ? formatTime(event.date) : ""}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <MapPin size={18} className="text-[#B9B4FF]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Ubicación</p>
+                    <p className="text-sm text-white/80">{event?.location}</p>
+                  </div>
+                </div>
+              </div>
             </motion.div>
-          ) : (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-12 backdrop-blur-xl flex flex-col items-center text-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", delay: 0.1 }}
-                className="w-24 h-24 rounded-full bg-[#B9B4FF]/20 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(185,180,255,0.3)]"
+
+            {/* Registration Form */}
+            <AnimatePresence mode="wait">
+              {!submitted ? (
+                <motion.div
+                  key="form"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 md:p-10 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#B9B4FF]/5 rounded-full blur-3xl -mr-16 -mt-16" />
+                  
+                  <div className="relative z-10">
+                    <h2 className="text-2xl font-bold text-white mb-2">Reserva tu lugar</h2>
+                    <p className="text-white/40 text-sm mb-10">Completa tus datos para confirmar tu asistencia.</p>
+
+                    <div className="space-y-8">
+                      {questions.map((q, idx) => (
+                        <motion.div
+                          key={q.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="space-y-3"
+                        >
+                          <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white/40">
+                            {q.id === "q_name" && <User size={12} className="text-[#B9B4FF]" />}
+                            {q.id === "q_email" && <Mail size={12} className="text-[#B9B4FF]" />}
+                            {q.question}
+                            {q.required && <span className="text-[#B9B4FF]">*</span>}
+                          </label>
+
+                          {/* Text / Email */}
+                          {(q.type === "text" || q.type === "email" || q.type === "paragraph") && (
+                            <div className="relative group">
+                              {q.type === "paragraph" ? (
+                                <textarea
+                                  rows={4}
+                                  placeholder={`Tu ${q.question.toLowerCase()}...`}
+                                  value={answers[q.id] as string}
+                                  onChange={e => {
+                                    setAnswers({ ...answers, [q.id]: e.target.value });
+                                    if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
+                                  }}
+                                  className={`w-full bg-white/5 border rounded-2xl px-5 py-4 text-sm text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all resize-none group-hover:bg-white/[0.08] ${errors[q.id] ? "border-red-400/50" : "border-white/10"}`}
+                                />
+                              ) : (
+                                <input
+                                  type={q.type}
+                                  placeholder={`Tu ${q.question.toLowerCase()}...`}
+                                  value={answers[q.id] as string}
+                                  onChange={e => {
+                                    setAnswers({ ...answers, [q.id]: e.target.value });
+                                    if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
+                                  }}
+                                  className={`w-full bg-white/5 border rounded-2xl px-5 py-4 text-sm text-white placeholder:text-white/10 outline-none focus:ring-1 focus:ring-[#B9B4FF]/30 transition-all group-hover:bg-white/[0.08] ${errors[q.id] ? "border-red-400/50" : "border-white/10"}`}
+                                />
+                              )}
+                              {errors[q.id] && (
+                                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-1">{errors[q.id]}</p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Multiple choice */}
+                          {q.type === "multiple_choice" && q.options && (
+                            <div className="grid grid-cols-1 gap-3">
+                              {q.options.map(opt => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => {
+                                    setAnswers({ ...answers, [q.id]: opt });
+                                    if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
+                                  }}
+                                  className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm text-left transition-all ${
+                                    answers[q.id] === opt
+                                      ? "bg-[#B9B4FF]/10 border-[#B9B4FF]/40 text-[#B9B4FF] shadow-[0_0_20px_rgba(185,180,255,0.1)]"
+                                      : "bg-white/5 border-white/10 text-white/50 hover:border-white/20 hover:bg-white/[0.08]"
+                                  }`}
+                                >
+                                  <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
+                                    answers[q.id] === opt ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/20"
+                                  }`}>
+                                    {answers[q.id] === opt && <div className="w-1.5 h-1.5 bg-black rounded-full" />}
+                                  </div>
+                                  {opt}
+                                </button>
+                              ))}
+                              {errors[q.id] && (
+                                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-1 ml-1">{errors[q.id]}</p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Checkbox */}
+                          {q.type === "checkbox" && q.options && (
+                            <div className="grid grid-cols-1 gap-3">
+                              {q.options.map(opt => {
+                                const selected = (answers[q.id] as string[]) || [];
+                                const isChecked = selected.includes(opt);
+                                return (
+                                  <button
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => {
+                                      const current = [...((answers[q.id] as string[]) || [])];
+                                      const idx = current.indexOf(opt);
+                                      if (idx === -1) current.push(opt);
+                                      else current.splice(idx, 1);
+                                      setAnswers({ ...answers, [q.id]: current });
+                                      if (errors[q.id]) setErrors({ ...errors, [q.id]: "" });
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm text-left transition-all ${
+                                      isChecked
+                                        ? "bg-[#B9B4FF]/10 border-[#B9B4FF]/40 text-[#B9B4FF] shadow-[0_0_20px_rgba(185,180,255,0.1)]"
+                                        : "bg-white/5 border-white/10 text-white/50 hover:border-white/20 hover:bg-white/[0.08]"
+                                    }`}
+                                  >
+                                    <div className={`w-4 h-4 rounded-md border flex-shrink-0 flex items-center justify-center ${
+                                      isChecked ? "bg-[#B9B4FF] border-[#B9B4FF]" : "border-white/20"
+                                    }`}>
+                                      {isChecked && <span className="text-black font-bold text-[10px]">✓</span>}
+                                    </div>
+                                    {opt}
+                                  </button>
+                                );
+                              })}
+                              {errors[q.id] && (
+                                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-1 ml-1">{errors[q.id]}</p>
+                              )}
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={handleSubmit}
+                      disabled={submitting}
+                      className="mt-12 w-full flex items-center justify-center gap-3 py-5 rounded-[1.5rem] bg-[#B9B4FF] text-black font-bold text-xs uppercase tracking-[0.2em] disabled:opacity-50 hover:bg-[#9C8CFF] transition-all shadow-[0_20px_40px_rgba(185,180,255,0.15)]"
+                    >
+                      {submitting ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : (
+                        <>
+                          Confirmar Asistencia
+                          <ChevronRight size={16} />
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-12 backdrop-blur-xl flex flex-col items-center text-center"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.1 }}
+                    className="w-24 h-24 rounded-full bg-[#B9B4FF]/20 flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(185,180,255,0.3)]"
+                  >
+                    <CheckCircle2 size={48} className="text-[#B9B4FF]" />
+                  </motion.div>
+                  <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">¡Registro Confirmado!</h2>
+                  <p className="text-white/50 text-sm leading-relaxed max-w-xs">
+                    Te has registrado exitosamente a <span className="text-white font-semibold">{event?.name}</span>. Revisa tu correo para más información.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Description */}
+            {event?.description && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="space-y-6 pt-12 border-t border-white/5"
               >
-                <CheckCircle2 size={48} className="text-[#B9B4FF]" />
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Acerca de este evento</h3>
+                <div
+                  className="text-white/60 text-base leading-[1.8] prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
               </motion.div>
-              <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">¡Registro Confirmado!</h2>
-              <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-                Te has registrado exitosamente a <span className="text-white font-semibold">{event?.name}</span>. Revisa tu correo para más información.
-              </p>
+            )}
+
+            {/* Presented By (Mobile Only) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="lg:hidden p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-md mt-12"
+            >
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B9B4FF] mb-6">Presented by</h4>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {event?.organizerAvatarUrl ? (
+                    <img src={event.organizerAvatarUrl} alt={event.organizerName} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={20} className="text-white/20" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-white">{event?.organizerName}</p>
+                  {event?.organizerBio && (
+                    <p className="text-xs text-white/40 leading-relaxed">{event.organizerBio}</p>
+                  )}
+                </div>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+
+        </div>
 
         {/* Footer */}
-        <p className="text-center text-white/20 text-[10px] uppercase tracking-widest font-bold mt-10">
+        <p className="text-center text-white/20 text-[10px] uppercase tracking-widest font-bold mt-20 pt-10 border-t border-white/5">
           Powered by NETEG
         </p>
       </div>
