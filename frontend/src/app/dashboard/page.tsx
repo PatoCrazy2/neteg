@@ -14,7 +14,8 @@ import {
   Globe,
   Lock,
   Palette,
-  Settings2
+  Settings2,
+  Clock
 } from "lucide-react";
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
@@ -25,10 +26,12 @@ export default function DashboardPage() {
   const [formData, setFormData] = useState({
     name: "",
     date: "",
+    time: "",
     location: "",
     description: "",
     capacity: "",
     requiresApproval: false,
+    isPublic: true,
   });
 
   const isLight = theme === 'light';
@@ -36,32 +39,35 @@ export default function DashboardPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!formData.name || !formData.date || !formData.location) {
-      alert("Por favor completa los campos obligatorios (Nombre, Fecha y Ubicación)");
+    if (!formData.name || !formData.date || !formData.time || !formData.location) {
+      alert("Por favor completa los campos obligatorios (Nombre, Fecha, Hora y Ubicación)");
       return;
     }
 
     setLoading(true);
     try {
-      // Nota: Solo enviamos los campos soportados actualmente por la API/DB
+      // Combinar fecha y hora para el backend
+      const combinedDateTime = new Date(`${formData.date}T${formData.time}`).toISOString();
+      
       const payload = {
         name: formData.name,
         description: formData.description,
-        date: new Date(formData.date).toISOString(),
+        date: combinedDateTime,
         location: formData.location
       };
       
       await eventApi.createEvent(payload);
       alert("¡Evento creado con éxito!");
       
-      // Limpiar formulario opcionalmente
       setFormData({
         name: "",
         date: "",
+        time: "",
         location: "",
         description: "",
         capacity: "",
         requiresApproval: false,
+        isPublic: true,
       });
     } catch (error) {
       console.error("Error creating event", error);
@@ -133,7 +139,9 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-1">
                 <p className={`text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Visibilidad</p>
-                <p className={`text-xs font-medium ${isLight ? 'text-black/60' : 'text-white/60'}`}>Privado</p>
+                <p className={`text-xs font-medium ${isLight ? 'text-black/60' : 'text-white/60'}`}>
+                  {formData.isPublic ? 'Público' : 'Solo Invitados'}
+                </p>
               </div>
             </div>
           </div>
@@ -142,18 +150,32 @@ export default function DashboardPage() {
         {/* Columna Derecha: Configuración (60%) */}
         <div className="lg:col-span-7 space-y-10">
           
-          {/* Metadata Header */}
+          {/* Metadata Header - Badges Interactivos */}
           <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] ${
             isLight ? 'text-black/30' : 'text-white/30'
           }`}>
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${
-              isLight ? 'bg-black/5 border-black/5' : 'bg-white/5 border-white/5'
-            }`}>
-              <Globe size={12} className="text-[#B9B4FF]" /> Evento Público
-            </div>
-            <div className="flex items-center gap-1.5">
+            <button 
+              type="button"
+              onClick={() => setFormData({...formData, isPublic: true})}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${
+                formData.isPublic 
+                  ? (isLight ? 'bg-black text-white border-black' : 'bg-[#B9B4FF]/20 border-[#B9B4FF]/40 text-[#B9B4FF]') 
+                  : (isLight ? 'bg-black/5 border-black/5 text-black/30 hover:text-black' : 'bg-white/5 border-white/5 text-white/30 hover:text-white')
+              }`}
+            >
+              <Globe size={12} className={formData.isPublic ? 'text-[#B9B4FF]' : ''} /> Evento Público
+            </button>
+            <button 
+              type="button"
+              onClick={() => setFormData({...formData, isPublic: false})}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${
+                !formData.isPublic 
+                  ? (isLight ? 'bg-black text-white border-black' : 'bg-white/10 border-white/20 text-white') 
+                  : (isLight ? 'bg-black/5 border-black/5 text-black/30 hover:text-black' : 'bg-white/5 border-white/5 text-white/30 hover:text-white')
+              }`}
+            >
               <Lock size={12} /> Solo Invitados
-            </div>
+            </button>
           </div>
 
           {/* Nombre del Evento (Editable Heading) */}
@@ -169,16 +191,17 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Controles Integrados */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div className="space-y-1.5">
+          {/* Controles Integrados - Fecha y Hora Separados */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-6">
+            <div className="md:col-span-4 space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
                 isLight ? 'text-black/20' : 'text-white/20'
               }`}>
-                <Calendar size={12} /> Fecha y Hora
+                <Calendar size={12} /> Fecha
               </label>
               <input 
-                type="datetime-local"
+                type="date"
+                style={{ colorScheme: isLight ? 'light' : 'dark' }}
                 className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
                   isLight ? 'text-black/80' : 'text-white/80'
                 }`}
@@ -187,7 +210,24 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="md:col-span-3 space-y-1.5">
+              <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
+                isLight ? 'text-black/20' : 'text-white/20'
+              }`}>
+                <Clock size={12} /> Hora
+              </label>
+              <input 
+                type="time"
+                style={{ colorScheme: isLight ? 'light' : 'dark' }}
+                className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
+                  isLight ? 'text-black/80' : 'text-white/80'
+                }`}
+                value={formData.time}
+                onChange={(e) => setFormData({...formData, time: e.target.value})}
+              />
+            </div>
+
+            <div className="md:col-span-5 space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
                 isLight ? 'text-black/20' : 'text-white/20'
               }`}>
