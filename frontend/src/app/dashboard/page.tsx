@@ -25,6 +25,7 @@ import { LocationInput } from "@/components/ui/LocationInput";
 import { FormBuilder, FormQuestion } from "@/components/events/FormBuilder";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 export default function DashboardPage() {
   const { theme, setTheme } = useDashboard();
@@ -325,20 +326,17 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 pt-2">
             <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
-              isLight ? 'text-black/20' : 'text-white/20'
+              isLight ? 'text-black/50' : 'text-white/50'
             }`}>
               <AlignLeft size={12} /> Descripción
             </label>
-            <textarea 
-              placeholder="¿De qué trata este evento?"
-              rows={4}
-              className={`w-full bg-transparent border-none p-0 text-[15px] leading-relaxed focus:outline-none transition-all resize-none ${
-                isLight ? 'text-black/70 placeholder:text-black/25' : 'text-white/70 placeholder:text-white/25'
-              }`}
+            <RichTextEditor 
               value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              onChange={(val) => setFormData({...formData, description: val})}
+              placeholder="Describe de qué trata este evento. Usa el menú superior para aplicar formato..."
+              isLight={isLight}
             />
           </div>
 
