@@ -190,9 +190,19 @@ export function LocationInput({ value, onChange, isLight }: LocationInputProps) 
 
               {mode === 'virtual' && (
                 <div className="space-y-1 p-1">
+                  <div className={`mb-3 p-3 rounded-xl border border-dashed transition-all ${
+                    isLight ? 'bg-black/[0.02] border-black/10' : 'bg-white/[0.02] border-white/10'
+                  }`}>
+                    <p className={`text-[10px] font-medium leading-relaxed ${isLight ? 'text-black/60' : 'text-white/60'}`}>
+                      1. Programa tu reunión usando los accesos rápidos.<br/>
+                      2. Copia el enlace generado.<br/>
+                      3. Pégalo en el campo de arriba.
+                    </p>
+                  </div>
+                  
                   <p className={`text-[10px] uppercase tracking-widest font-bold mb-2 ml-1 ${isLight ? 'text-black/20' : 'text-white/20'}`}>Accesos Directos</p>
                   <a 
-                    href="https://meet.google.com/new" 
+                    href="https://calendar.google.com/calendar/r/eventedit?vcon=meet" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className={`flex items-center justify-between w-full p-3 rounded-xl transition-all group ${
@@ -205,7 +215,7 @@ export function LocationInput({ value, onChange, isLight }: LocationInputProps) 
                       </div>
                       <div className="text-left">
                         <span className={`block text-xs font-bold ${isLight ? 'text-black' : 'text-white'}`}>Google Meet</span>
-                        <span className={`block text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Crear reunión ahora</span>
+                        <span className={`block text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Programar en Calendar</span>
                       </div>
                     </div>
                     <ExternalLink size={14} className={isLight ? 'text-black/20 group-hover:text-black/60' : 'text-white/20 group-hover:text-white/60'} />
