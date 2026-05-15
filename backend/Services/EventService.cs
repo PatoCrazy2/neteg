@@ -7,10 +7,12 @@ namespace backend.Services;
 public class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
+    private readonly IStorageService _storageService;
 
-    public EventService(IEventRepository eventRepository)
+    public EventService(IEventRepository eventRepository, IStorageService storageService)
     {
         _eventRepository = eventRepository;
+        _storageService = storageService;
     }
 
     public async Task<EventResponse> CreateEventAsync(CreateEventRequest request, Guid userId)
@@ -20,8 +22,11 @@ public class EventService : IEventService
             Id = Guid.NewGuid(),
             Name = request.Name,
             Description = request.Description,
-            Date = request.Date,
+            Date = DateTime.SpecifyKind(request.Date, DateTimeKind.Utc),
             Location = request.Location,
+            IsPublic = request.IsPublic,
+            RequiresApproval = request.RequiresApproval,
+            Capacity = request.Capacity,
             UserId = userId,
             CreatedAt = DateTime.UtcNow
         };
@@ -47,6 +52,30 @@ public class EventService : IEventService
         return events.Select(MapToResponse);
     }
 
+    public async Task<string> UploadCoverImageAsync(Guid eventId, IFormFile file, Guid userId)
+    {
+        var @event = await _eventRepository.GetByIdAsync(eventId);
+        
+        if (@event == null) throw new KeyNotFoundException("Evento no encontrado");
+        if (@event.UserId != userId) throw new UnauthorizedAccessException("No tienes permiso para editar este evento");
+
+        // Subir a MinIO/S3
+        var imageUrl = await _storageService.UploadFileAsync(file, "event-covers");
+
+        // Borrar imagen anterior si existe
+        if (!string.IsNullOrEmpty(@event.CoverImageUrl))
+        {
+            try { await _storageService.DeleteFileAsync(@event.CoverImageUrl); }
+            catch { /* Ignorar errores al borrar */ }
+        }
+
+        @event.CoverImageUrl = imageUrl;
+        await _eventRepository.UpdateAsync(@event);
+        await _eventRepository.SaveChangesAsync();
+
+        return imageUrl;
+    }
+
     private EventResponse MapToResponse(Event e)
     {
         return new EventResponse
@@ -58,6 +87,10 @@ public class EventService : IEventService
             Location = e.Location,
             UserId = e.UserId,
             OrganizerName = e.Organizer?.FullName ?? "Unknown",
+            IsPublic = e.IsPublic,
+            RequiresApproval = e.RequiresApproval,
+            Capacity = e.Capacity,
+            CoverImageUrl = e.CoverImageUrl,
             CreatedAt = e.CreatedAt
         };
     }

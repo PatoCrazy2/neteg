@@ -5,7 +5,16 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || "An error occurred");
+    
+    // Extraer mensaje de error detallado de ASP.NET
+    let errorMessage = errorData.message || errorData.title || "An error occurred";
+    
+    if (errorData.errors) {
+      const details = Object.values(errorData.errors).flat().join(", ");
+      errorMessage = `${errorMessage}: ${details}`;
+    }
+    
+    throw new Error(errorMessage);
   }
   return response.json();
 }
@@ -62,6 +71,21 @@ export const eventApi = {
       body: JSON.stringify(data),
     });
     return handleResponse<Event>(response);
+  },
+
+  uploadCoverImage: async (eventId: string, file: File): Promise<{ imageUrl: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const token = getToken();
+    const response = await fetch(`${API_URL}/api/events/${eventId}/cover`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    return handleResponse<{ imageUrl: string }>(response);
   },
 };
 

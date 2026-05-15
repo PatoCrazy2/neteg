@@ -14,10 +14,12 @@ import {
   Globe,
   Lock,
   Palette,
-  Settings2
+  Settings2,
+  Clock
 } from "lucide-react";
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
+import { LocationInput } from "@/components/ui/LocationInput";
 
 export default function DashboardPage() {
   const { theme, setTheme } = useDashboard();
@@ -25,44 +27,72 @@ export default function DashboardPage() {
   const [formData, setFormData] = useState({
     name: "",
     date: "",
+    time: "",
     location: "",
     description: "",
     capacity: "",
     requiresApproval: false,
+    isPublic: true,
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const isLight = theme === 'light';
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!formData.name || !formData.date || !formData.location) {
-      alert("Por favor completa los campos obligatorios (Nombre, Fecha y Ubicación)");
+    if (!formData.name || !formData.date || !formData.time || !formData.location) {
+      alert("Por favor completa los campos obligatorios (Nombre, Fecha, Hora y Ubicación)");
       return;
     }
 
     setLoading(true);
     try {
-      // Nota: Solo enviamos los campos soportados actualmente por la API/DB
+      // Combinar fecha y hora para el backend
+      const combinedDateTime = new Date(`${formData.date}T${formData.time}`).toISOString();
+      
       const payload = {
         name: formData.name,
         description: formData.description,
-        date: new Date(formData.date).toISOString(),
-        location: formData.location
+        date: combinedDateTime,
+        location: formData.location,
+        isPublic: formData.isPublic,
+        requiresApproval: formData.requiresApproval,
+        capacity: formData.capacity ? parseInt(formData.capacity) : undefined
       };
       
-      await eventApi.createEvent(payload);
+      const createdEvent = await eventApi.createEvent(payload);
+
+      // Si hay una imagen seleccionada, subirla ahora
+      if (selectedFile) {
+        await eventApi.uploadCoverImage(createdEvent.id, selectedFile);
+      }
+
       alert("¡Evento creado con éxito!");
       
-      // Limpiar formulario opcionalmente
       setFormData({
         name: "",
         date: "",
+        time: "",
         location: "",
         description: "",
         capacity: "",
         requiresApproval: false,
+        isPublic: true,
       });
+      setSelectedFile(null);
+      setPreviewUrl(null);
     } catch (error) {
       console.error("Error creating event", error);
       alert(`Error al crear el evento: ${error instanceof Error ? error.message : 'Error desconocido'}`);
@@ -72,30 +102,43 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-6 transition-colors duration-700">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+    <div className="h-[calc(100vh-64px)] w-full flex justify-center p-8 lg:p-12 transition-colors duration-700 overflow-hidden">
+      <div className="w-full max-w-6xl h-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
         
-        {/* Columna Izquierda: Panel Visual (40%) */}
-        <div className="lg:col-span-5 space-y-8 sticky top-0">
+        {/* Columna Izquierda: Panel Visual (40%) - Fijo */}
+        <div className="lg:col-span-5 space-y-8 h-full flex flex-col">
           <div className="space-y-4">
-            <div className={`group relative aspect-[4/5] w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
+            <div className={`group relative aspect-video w-full rounded-3xl overflow-hidden transition-all duration-500 border ${
               isLight ? 'bg-black/5 border-black/5 hover:border-black/20' : 'bg-white/[0.03] border-white/5 hover:border-[#B9B4FF]/30'
             }`}>
-              <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
-                isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
-              }`}>
-                <Camera size={32} strokeWidth={1.5} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
-              </div>
-              <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+              {previewUrl ? (
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-all ${
+                  isLight ? 'text-black/10 group-hover:text-black/40' : 'text-white/10 group-hover:text-[#B9B4FF]/40'
+                }`}>
+                  <Camera size={24} strokeWidth={1.5} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Imagen de Portada</span>
+                </div>
+              )}
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 opacity-0 cursor-pointer" 
+              />
             </div>
 
             <div className="flex items-center justify-between px-2">
               <div className="flex gap-2">
                 <button 
                   onClick={() => setTheme('default')}
-                  title="Default (Plasma)"
-                  className={`w-6 h-6 rounded-full border transition-all bg-[#B9B4FF] ${theme === 'default' ? 'ring-2 ring-white scale-110' : 'border-white/10 opacity-50 hover:opacity-100'}`} 
+                  title="Plasma Theme"
+                  className={`w-6 h-6 rounded-full border transition-all bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 ${theme === 'default' ? 'ring-2 ring-[#B9B4FF] scale-110' : 'border-white/10 opacity-50 hover:opacity-100'}`} 
                 />
                 <button 
                   onClick={() => setTheme('black')}
@@ -122,8 +165,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className={`p-6 rounded-2xl border transition-all ${
-            isLight ? 'bg-black/5 border-black/5' : 'bg-white/[0.02] border-white/5'
+          <div className={`p-6 rounded-3xl border transition-all duration-500 ${
+            isLight ? 'bg-black/[0.02] border-black/5' : 'bg-white/[0.02] border-white/5'
           }`}>
             <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 ${isLight ? 'text-black/20' : 'text-white/20'}`}>Estado Actual</h4>
             <div className="grid grid-cols-2 gap-4">
@@ -133,27 +176,52 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-1">
                 <p className={`text-[10px] ${isLight ? 'text-black/40' : 'text-white/40'}`}>Visibilidad</p>
-                <p className={`text-xs font-medium ${isLight ? 'text-black/60' : 'text-white/60'}`}>Privado</p>
+                <p className={`text-xs font-medium ${isLight ? 'text-black/60' : 'text-white/60'}`}>
+                  {formData.isPublic ? 'Público' : 'Solo Invitados'}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Columna Derecha: Configuración (60%) */}
-        <div className="lg:col-span-7 space-y-10">
+        {/* Columna Derecha: Configuración (60%) - Con Scroll */}
+        <div className="lg:col-span-7 space-y-8 h-full overflow-y-auto pr-6 pb-20 no-scrollbar">
+          <style jsx>{`
+            .no-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+            .no-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
           
-          {/* Metadata Header */}
+          {/* Metadata Header - Badges Interactivos */}
           <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] ${
             isLight ? 'text-black/30' : 'text-white/30'
           }`}>
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${
-              isLight ? 'bg-black/5 border-black/5' : 'bg-white/5 border-white/5'
-            }`}>
-              <Globe size={12} className="text-[#B9B4FF]" /> Evento Público
-            </div>
-            <div className="flex items-center gap-1.5">
+            <button 
+              type="button"
+              onClick={() => setFormData({...formData, isPublic: true})}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${
+                formData.isPublic 
+                  ? (isLight ? 'bg-black text-white border-black' : 'bg-[#B9B4FF]/20 border-[#B9B4FF]/40 text-[#B9B4FF]') 
+                  : (isLight ? 'bg-black/5 border-black/5 text-black/30 hover:text-black' : 'bg-white/5 border-white/5 text-white/30 hover:text-white')
+              }`}
+            >
+              <Globe size={12} className={formData.isPublic ? 'text-[#B9B4FF]' : ''} /> Evento Público
+            </button>
+            <button 
+              type="button"
+              onClick={() => setFormData({...formData, isPublic: false})}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${
+                !formData.isPublic 
+                  ? (isLight ? 'bg-black text-white border-black' : 'bg-white/10 border-white/20 text-white') 
+                  : (isLight ? 'bg-black/5 border-black/5 text-black/30 hover:text-black' : 'bg-white/5 border-white/5 text-white/30 hover:text-white')
+              }`}
+            >
               <Lock size={12} /> Solo Invitados
-            </div>
+            </button>
           </div>
 
           {/* Nombre del Evento (Editable Heading) */}
@@ -169,16 +237,17 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Controles Integrados */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          {/* Controles Integrados - Fecha y Hora */}
+          <div className="grid grid-cols-2 gap-8">
             <div className="space-y-1.5">
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
                 isLight ? 'text-black/20' : 'text-white/20'
               }`}>
-                <Calendar size={12} /> Fecha y Hora
+                <Calendar size={12} /> Fecha
               </label>
               <input 
-                type="datetime-local"
+                type="date"
+                style={{ colorScheme: isLight ? 'light' : 'dark' }}
                 className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
                   isLight ? 'text-black/80' : 'text-white/80'
                 }`}
@@ -191,18 +260,27 @@ export default function DashboardPage() {
               <label className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${
                 isLight ? 'text-black/20' : 'text-white/20'
               }`}>
-                <MapPin size={12} /> Ubicación
+                <Clock size={12} /> Hora
               </label>
               <input 
-                type="text"
-                placeholder="Dirección o link"
+                type="time"
+                style={{ colorScheme: isLight ? 'light' : 'dark' }}
                 className={`w-full bg-transparent border-none p-0 text-[15px] font-medium focus:outline-none transition-all ${
-                  isLight ? 'text-black/80 placeholder:text-black/10' : 'text-white/80 placeholder:text-white/10'
+                  isLight ? 'text-black/80' : 'text-white/80'
                 }`}
-                value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                value={formData.time}
+                onChange={(e) => setFormData({...formData, time: e.target.value})}
               />
             </div>
+          </div>
+
+          {/* Ubicación (Ancho Completo) */}
+          <div className="pt-2">
+            <LocationInput 
+              value={formData.location}
+              onChange={(val) => setFormData({...formData, location: val})}
+              isLight={isLight}
+            />
           </div>
 
           <div className="space-y-2">

@@ -42,6 +42,14 @@ public class EventsController : ControllerBase
         return Ok(events);
     }
 
+    [HttpPost("{id}/cover")]
+    public async Task<IActionResult> UploadCover(Guid id, IFormFile file)
+    {
+        var userId = GetUserId();
+        var imageUrl = await _eventService.UploadCoverImageAsync(id, file, userId);
+        return Ok(new { imageUrl });
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
