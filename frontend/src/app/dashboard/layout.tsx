@@ -13,7 +13,7 @@ interface DashboardContextType {
   setTheme: (theme: Theme) => void;
 }
 
-const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
+export const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
 export const useDashboard = () => {
   const context = useContext(DashboardContext);

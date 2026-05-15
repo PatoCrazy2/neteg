@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { eventApi } from "@/lib/api";
 import { Event } from "@/types/event";
 import { useDashboard } from "@/app/dashboard/layout";
@@ -14,6 +15,7 @@ type Tab = 'attending' | 'created';
 type Filter = 'upcoming' | 'past';
 
 export default function EventsPage() {
+  const router = useRouter();
   const { theme } = useDashboard();
   const [activeTab, setActiveTab] = useState<Tab>('attending');
   const [activeFilter, setActiveFilter] = useState<Filter>('upcoming');
@@ -93,7 +95,10 @@ export default function EventsPage() {
            <p className="text-white/30 text-xs sm:text-sm font-medium">Keep track of your events and participations.</p>
         </div>
         
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#B9B4FF] text-black font-bold text-[11px] uppercase tracking-wider hover:bg-[#9C8CFF] transition-all shadow-[0_0_20px_rgba(185,180,255,0.3)]">
+        <button 
+          onClick={() => router.push("/dashboard")}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#B9B4FF] text-black font-bold text-[11px] uppercase tracking-wider hover:bg-[#9C8CFF] transition-all shadow-[0_0_20px_rgba(185,180,255,0.3)]"
+        >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Create Event</span>
           <span className="sm:hidden">Create</span>
@@ -137,17 +142,6 @@ export default function EventsPage() {
                   {f}
                 </button>
               ))}
-           </div>
-
-           <div className="h-8 w-px bg-white/5 mx-1" />
-
-           <div className="flex items-center gap-2">
-             <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.08] text-white/40 hover:text-white hover:bg-white/10 transition-all">
-                <Search className="w-4 h-4" />
-             </button>
-             <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.08] text-white/40 hover:text-white hover:bg-white/10 transition-all">
-                <FilterIcon className="w-4 h-4" />
-             </button>
            </div>
         </div>
       </div>

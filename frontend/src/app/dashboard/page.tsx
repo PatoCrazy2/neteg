@@ -225,8 +225,8 @@ export default function DashboardPage() {
               type="button"
               onClick={() => setFormData({ ...formData, isPublic: true })}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${formData.isPublic
-                  ? (isLight ? 'bg-black text-white border-black' : 'bg-[#B9B4FF]/20 border-[#B9B4FF]/40 text-[#B9B4FF]')
-                  : (isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white')
+                ? (isLight ? 'bg-black text-white border-black' : 'bg-[#B9B4FF]/20 border-[#B9B4FF]/40 text-[#B9B4FF]')
+                : (isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white')
                 }`}
             >
               <Globe size={12} className={formData.isPublic ? 'text-[#B9B4FF]' : ''} /> Evento Público
@@ -235,8 +235,8 @@ export default function DashboardPage() {
               type="button"
               onClick={() => setFormData({ ...formData, isPublic: false })}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all ${!formData.isPublic
-                  ? (isLight ? 'bg-black text-white border-black' : 'bg-white/10 border-white/20 text-white')
-                  : (isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white')
+                ? (isLight ? 'bg-black text-white border-black' : 'bg-white/10 border-white/20 text-white')
+                : (isLight ? 'bg-black/5 border-black/10 text-black/40 hover:text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white')
                 }`}
             >
               <Lock size={12} /> Solo Invitados
@@ -247,7 +247,7 @@ export default function DashboardPage() {
           <div className="space-y-2">
             <input
               type="text"
-              placeholder="Nombre del evento..."
+              placeholder="Nombre del evento"
               className={`w-full bg-transparent border-none p-0 text-5xl font-bold focus:outline-none tracking-tight leading-tight transition-colors ${isLight ? 'placeholder:text-black/20 text-black' : 'placeholder:text-white/25 text-white'
                 } ${formErrors.name ? 'placeholder:text-red-400/50 text-red-400' : ''}`}
               value={formData.name}

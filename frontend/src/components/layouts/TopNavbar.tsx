@@ -13,8 +13,8 @@ import {
   LogOut,
   ChevronDown
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useDashboard } from "@/app/dashboard/layout";
+import { useState, useEffect, useContext } from "react";
+import { useDashboard, DashboardContext } from "@/app/dashboard/layout";
 
 const NAV_ITEMS = [
   { label: "Mis Eventos", href: "/dashboard/events", icon: Calendar },
@@ -24,7 +24,8 @@ const NAV_ITEMS = [
 
 export function TopNavbar() {
   const pathname = usePathname();
-  const { theme } = useDashboard();
+  const context = useContext(DashboardContext);
+  const theme = context?.theme || 'default';
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [timeString, setTimeString] = useState("");
 
