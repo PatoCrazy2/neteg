@@ -32,6 +32,8 @@ public class EventRepository : IEventRepository
     {
         return await _context.Participants
             .Where(p => p.UserId == userId)
+            .Include(p => p.Event)
+            .ThenInclude(e => e!.Organizer)
             .Select(p => p.Event!)
             .OrderByDescending(e => e.Date)
             .ToListAsync();

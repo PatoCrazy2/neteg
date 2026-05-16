@@ -98,6 +98,7 @@ services:
       Jwt__GoogleClientId: ${GOOGLE_CLIENT_ID}
       Redis__ConnectionString: redis:6379
       Storage__Endpoint: http://minio:9000
+      Storage__PublicEndpoint: http://localhost:9000
       Storage__AccessKey: ${MINIO_ROOT_USER}
       Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
       Storage__BucketName: ${MINIO_BUCKET}
@@ -132,6 +133,7 @@ services:
       Redis__ConnectionString: redis:6379
 
       Storage__Endpoint: http://minio:9000
+      Storage__PublicEndpoint: http://localhost:9000
       Storage__AccessKey: ${MINIO_ROOT_USER}
       Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
       Storage__BucketName: ${MINIO_BUCKET}

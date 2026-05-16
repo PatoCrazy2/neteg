@@ -42,11 +42,14 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 |---|---|
 | Registro de asistentes | ✅ Completado |
 | Autenticación (Local + Google) | ✅ Completado |
-| Generación de pases QR | 🔜 Pendiente |
+| Gestión de eventos (Dashboard) | ✅ Completado |
+| Formularios dinámicos (JSONB) | ✅ Completado |
+| Landing Pages  | ✅ Completado |
+| Generación de pases QR | ✅ Completado |
 | Validación de acceso | 🔜 Pendiente |
 | Control de asistencia | 🔜 Pendiente |
 | Generación automática de certificados | 🔜 Pendiente |
-| Procesamiento asíncrono | 🟢 Arquitectura preparada |
+| Procesamiento asíncrono | ✅ Operacional (Hangfire) |
 
 ---
 
@@ -121,11 +124,13 @@ Las tareas pesadas como:
 
 se ejecutan fuera de la API principal para evitar bloqueos y mejorar escalabilidad.
 
-### 🔹 Redis como capa de procesamiento
+### 🔹 Redis + Hangfire como capa de procesamiento
 Redis se utiliza para:
 - cache
-- colas
+- colas persistentes (Hangfire)
 - comunicación async entre servicios
+
+Hangfire gestiona el ciclo de vida de las tareas (reintentos automáticos, monitoreo y persistencia).
 
 ### 🔹 MinIO como almacenamiento S3-compatible
 MinIO almacena:
@@ -136,6 +141,13 @@ MinIO almacena:
 
 evitando depender del filesystem local.
 
+### 🔹 Formularios Dinámicos con PostgreSQL JSONB
+Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga su propio esquema de formulario. Esto permite:
+- Flexibilidad total para el organizador.
+- Sin necesidad de migraciones de base de datos al añadir preguntas.
+- Consultas eficientes y almacenamiento compacto.
+
+
 ---
 
 # 🛠️ Stack Tecnológico
@@ -145,10 +157,11 @@ evitando depender del filesystem local.
 | Frontend | Next.js 15 + TypeScript |
 | UI | Tailwind CSS |
 | Backend | ASP.NET Core 8 Web API |
-| Worker Async | ASP.NET Background Worker |
+| Worker Async | ASP.NET Background Worker + Hangfire |
+| Generación QR | QRCoder |
 | Base de Datos | PostgreSQL 16 |
-| Cache / Colas | Redis 7 |
-| Storage | MinIO |
+| Cache / Colas | Redis 7 + Hangfire Storage |
+| Storage | MinIO / Cloudflare R2 (S3 Compatible) |
 | Infraestructura | Docker + Docker Compose |
 
 ---
@@ -291,12 +304,10 @@ Actualmente el proyecto se encuentra en etapa inicial de desarrollo (MVP).
 - ✅ Tailwind CSS
 
 ## Pendiente
-- 🔜 Autenticación JWT
-- 🔜 Modelado de base de datos
-- 🔜 Gestión de eventos
-- 🔜 Sistema de asistentes
-- 🔜 Generación QR
-- 🔜 Renderizado de certificados
+- 🔜 Validación de acceso (Check-in móvil)
+- 🔜 Generación automática de certificados (Playwright)
+- 🔜 Sistema de plantillas para certificados
+- 🔜 Notificaciones por correo electrónico (SendGrid/Amazon SES)
 
 ---
 

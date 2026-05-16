@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Infrastructure;
@@ -11,9 +12,11 @@ using backend.Infrastructure;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260516041834_AddFormAnswersToParticipant")]
+    partial class AddFormAnswersToParticipant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,9 +50,6 @@ namespace backend.Migrations
 
                     b.Property<string>("FormSchema")
                         .HasColumnType("jsonb");
-
-                    b.Property<bool>("GenerateTickets")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
@@ -108,15 +108,6 @@ namespace backend.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TicketJobId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TicketStatus")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TicketUrl")
                         .HasColumnType("text");
 
                     b.Property<Guid?>("UserId")

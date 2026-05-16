@@ -32,5 +32,12 @@ public class Participant
     [Required]
     public string Status { get; set; } = "Registered"; // Registered, CheckedIn, Cancelled
 
+    [Column(TypeName = "jsonb")]
+    public string FormAnswers { get; set; } = "{}";
+
+    public string? TicketUrl { get; set; }
+    public string? TicketJobId { get; set; }
+    public string? TicketStatus { get; set; }
+
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 }

@@ -101,6 +101,37 @@ export const eventApi = {
   },
 };
 
+export const participantApi = {
+  register: async (data: any): Promise<any> => {
+    const response = await fetch(`${API_URL}/api/participants/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<any>(response);
+  },
+
+  getByEventId: async (eventId: string): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/api/participants/event/${eventId}`, {
+      headers: getHeaders(),
+    });
+    return handleResponse<any[]>(response);
+  },
+
+  getMyParticipation: async (eventId: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/api/participants/event/${eventId}/me`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 204) return null; // No content means no participation
+    return handleResponse<any>(response);
+  },
+
+  getById: async (id: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/api/participants/${id}`);
+    return handleResponse<any>(response);
+  },
+};
+
 // Helper to get stored token
 export const getToken = () => typeof window !== "undefined" ? localStorage.getItem("token") : null;
 

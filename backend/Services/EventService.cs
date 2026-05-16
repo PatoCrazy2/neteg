@@ -29,6 +29,7 @@ public class EventService : IEventService
             Capacity = request.Capacity,
             FormSchema = request.FormSchema,
             SocialLinks = request.SocialLinks,
+            GenerateTickets = request.GenerateTickets,
             UserId = userId,
             CreatedAt = DateTime.UtcNow
         };
@@ -104,6 +105,7 @@ public class EventService : IEventService
             SocialLinks = e.SocialLinks,
             OrganizerAvatarUrl = e.Organizer?.AvatarUrl,
             OrganizerBio = e.Organizer?.Bio,
+            GenerateTickets = e.GenerateTickets,
             CreatedAt = e.CreatedAt
         };
     }

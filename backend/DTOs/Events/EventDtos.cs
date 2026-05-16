@@ -23,6 +23,7 @@ public class CreateEventRequest
     public int? Capacity { get; set; }
     public string? FormSchema { get; set; }
     public string? SocialLinks { get; set; }
+    public bool GenerateTickets { get; set; } = true;
 }
 
 public class EventResponse
@@ -42,5 +43,6 @@ public class EventResponse
     public string? SocialLinks { get; set; }
     public string? OrganizerAvatarUrl { get; set; }
     public string? OrganizerBio { get; set; }
+    public bool GenerateTickets { get; set; }
     public DateTime CreatedAt { get; set; }
 }

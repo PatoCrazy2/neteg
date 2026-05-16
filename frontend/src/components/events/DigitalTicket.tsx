@@ -1,14 +1,69 @@
 "use client";
 
 import { Event } from "@/types/event";
+import { ParticipantResponse } from "@/types/participant";
 import { motion } from "framer-motion";
-import { QrCode, MapPin, Calendar, Clock, User, Share2, Download } from "lucide-react";
+import { QrCode, MapPin, Calendar, Clock, User, Share2, Download, Loader2, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { participantApi } from "@/lib/api";
 
 interface DigitalTicketProps {
   event: Event;
+  participant?: ParticipantResponse;
 }
 
-export function DigitalTicket({ event }: DigitalTicketProps) {
+export function DigitalTicket({ event, participant: initialParticipant }: DigitalTicketProps) {
+  const [participant, setParticipant] = useState<ParticipantResponse | undefined>(initialParticipant);
+  const [loading, setLoading] = useState(!initialParticipant && event.generateTickets);
+
+  useEffect(() => {
+    // If we have an initial participant, sync it
+    if (initialParticipant) {
+      setParticipant(initialParticipant);
+      setLoading(false);
+    }
+
+    // If no participant provided but event requires tickets, fetch it
+    if (event.generateTickets) {
+      const fetchParticipant = async () => {
+        try {
+          // Obtener la participación exacta del usuario logueado para este evento
+          const data = await participantApi.getMyParticipation(event.id);
+          if (data) {
+            setParticipant(data);
+          }
+        } catch (err) {
+          console.error("Error fetching participant for ticket", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchParticipant();
+    }
+  }, [event.id, initialParticipant, event.generateTickets]);
+
+  // Polling logic if status is pending
+  useEffect(() => {
+    if (!participant || participant.ticketStatus === 'Completed' || participant.ticketStatus === 'Failed' || participant.ticketStatus === 'NotRequired') {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const updated = await participantApi.getById(participant.id);
+        setParticipant(updated);
+        if (updated.ticketStatus === 'Completed' || updated.ticketStatus === 'Failed') {
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [participant?.id, participant?.ticketStatus]);
+
   const date = new Date(event.date);
   const formattedDate = date.toLocaleDateString('es-ES', {
     day: 'numeric',
@@ -20,6 +75,11 @@ export function DigitalTicket({ event }: DigitalTicketProps) {
     minute: '2-digit'
   });
 
+  const isGenerating = loading || participant?.ticketStatus === 'Pending' || participant?.ticketStatus === 'Processing';
+  const isFailed = participant?.ticketStatus === 'Failed';
+  const isCompleted = participant?.ticketStatus === 'Completed' && participant?.ticketUrl;
+  const notRequired = !event.generateTickets || participant?.ticketStatus === 'NotRequired';
+
   return (
     <div className="flex flex-col gap-6">
       {/* Ticket Container */}
@@ -28,7 +88,7 @@ export function DigitalTicket({ event }: DigitalTicketProps) {
         animate={{ opacity: 1, scale: 1 }}
         className="relative bg-[#1A1A1F] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl"
       >
-        {/* Top Header (Cut effect) */}
+        {/* Top Header */}
         <div className="p-8 pb-4 relative">
           <div className="flex justify-between items-start mb-6">
             <div className="flex flex-col">
@@ -72,42 +132,76 @@ export function DigitalTicket({ event }: DigitalTicketProps) {
           <div className="w-4 h-8 rounded-l-full bg-[#0B0B0E] border-y border-l border-white/10 -mr-1" />
         </div>
 
-        {/* Bottom Section (QR Code) */}
-        <div className="p-8 pt-6 bg-white/[0.02] flex flex-col items-center">
-          <div className="p-4 bg-white rounded-3xl mb-4 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-            <QrCode className="w-32 h-32 text-black" />
-          </div>
-          <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] mb-4">
-            #{event.id.slice(0, 8).toUpperCase()}
-          </p>
-          
-          <div className="flex gap-3 w-full">
-            <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all">
-              <Download className="w-4 h-4" />
-              Guardar
-            </button>
-            <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all">
-              <Share2 className="w-4 h-4" />
-              Compartir
-            </button>
-          </div>
+        {/* Bottom Section (Content depending on status) */}
+        <div className="p-8 pt-6 bg-white/[0.02] flex flex-col items-center min-h-[200px] justify-center">
+          {notRequired ? (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-400" />
+              </div>
+              <h3 className="text-white font-bold text-lg mb-1">Registro Confirmado</h3>
+              <p className="text-white/40 text-xs">Este evento no requiere boleto digital.</p>
+            </div>
+          ) : isGenerating ? (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-[#B9B4FF]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Loader2 className="w-8 h-8 text-[#B9B4FF] animate-spin" />
+              </div>
+              <h3 className="text-white font-bold text-lg mb-1">Preparando...</h3>
+              <p className="text-white/40 text-xs">Generando tu boleto digital.</p>
+            </div>
+          ) : isFailed ? (
+            <div className="text-center py-10">
+              <p className="text-red-400 text-xs">Error al generar el boleto. Por favor contacta al organizador.</p>
+            </div>
+          ) : isCompleted ? (
+            <>
+              <div className="p-4 bg-white rounded-3xl mb-4 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                <img src={participant.ticketUrl} alt="QR Code" className="w-32 h-32" />
+              </div>
+              <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] mb-6">
+                #{participant.id.slice(0, 8).toUpperCase()}
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => window.open(participant.ticketUrl, '_blank')}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all"
+                >
+                  <Download className="w-4 h-4" />
+                  Descargar
+                </button>
+                <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all">
+                  <Share2 className="w-4 h-4" />
+                  Compartir
+                </button>
+              </div>
+            </>
+          ) : (
+             <div className="text-center py-10">
+              <QrCode className="w-20 h-20 text-white/10 mx-auto" />
+            </div>
+          )}
         </div>
       </motion.div>
 
       {/* Additional Info */}
-      <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5">
-        <h4 className="text-white font-bold text-sm mb-3">Información para el ingreso</h4>
-        <ul className="space-y-2">
-          <li className="text-xs text-white/40 flex items-start gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
-            Llega al menos 15 minutos antes de la hora programada.
-          </li>
-          <li className="text-xs text-white/40 flex items-start gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
-            Muestra este código QR en la entrada para validar tu asistencia.
-          </li>
-        </ul>
-      </div>
+      {!notRequired && (
+        <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5">
+          <h4 className="text-white font-bold text-sm mb-3">Información para el ingreso</h4>
+          <ul className="space-y-2">
+            <li className="text-xs text-white/40 flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
+              Llega al menos 15 minutos antes de la hora programada.
+            </li>
+            <li className="text-xs text-white/40 flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
+              Muestra este código QR en la entrada para validar tu asistencia.
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
+

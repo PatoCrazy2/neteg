@@ -19,7 +19,8 @@ import {
   Plus,
   Minus,
   Copy,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Ticket
 } from "lucide-react";
 import { useDashboard } from "@/app/dashboard/layout";
 import { eventApi } from "@/lib/api";
@@ -41,6 +42,7 @@ export default function DashboardPage() {
     capacity: "",
     requiresApproval: false,
     isPublic: true,
+    generateTickets: true,
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -94,7 +96,8 @@ export default function DashboardPage() {
         isPublic: formData.isPublic,
         requiresApproval: formData.requiresApproval,
         capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
-        formSchema: JSON.stringify(formSchema)
+        formSchema: JSON.stringify(formSchema),
+        generateTickets: formData.generateTickets
       };
 
       const createdEvent = await eventApi.createEvent(payload);
@@ -116,6 +119,7 @@ export default function DashboardPage() {
         capacity: "",
         requiresApproval: false,
         isPublic: true,
+        generateTickets: true,
       });
       setSelectedFile(null);
       setPreviewUrl(null);
@@ -402,6 +406,28 @@ export default function DashboardPage() {
                     className="absolute top-1 w-2.5 h-2.5 rounded-full bg-white"
                   />
                 </button>
+              </div>
+
+              <div className={`flex flex-col py-3 px-3 -mx-3 rounded-xl transition-all hover:bg-white/5`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Ticket size={16} className={formData.generateTickets ? 'text-[#B9B4FF]' : (isLight ? 'text-black/40' : 'text-white/40')} />
+                    <span className={`text-sm ${isLight ? 'text-black/70' : 'text-white/70'}`}>Generar Boletos QR</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, generateTickets: !formData.generateTickets })}
+                    className={`w-8 h-4 rounded-full relative transition-colors ${formData.generateTickets ? 'bg-[#B9B4FF]' : (isLight ? 'bg-black/10' : 'bg-white/10')}`}
+                  >
+                    <motion.div
+                      animate={{ x: formData.generateTickets ? 18 : 2 }}
+                      className="absolute top-1 w-2.5 h-2.5 rounded-full bg-white"
+                    />
+                  </button>
+                </div>
+                <p className={`text-[10px] mt-2 leading-relaxed ${isLight ? 'text-black/40' : 'text-white/40'}`}>
+                  Activa esta opción para eventos presenciales donde necesites escarnecer accesos en puerta. Desactívala para eventos virtuales o reuniones casuales.
+                </p>
               </div>
             </div>
           </div>
