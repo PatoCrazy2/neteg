@@ -1,4 +1,5 @@
 import { CreateEventRequest, Event } from "@/types/event";
+import { RegisterParticipantRequest, ParticipantResponse, TicketQrPayload } from "@/types/participant";
 import { AuthResponse } from "@/types/auth";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -126,9 +127,18 @@ export const participantApi = {
     return handleResponse<any>(response);
   },
 
-  getById: async (id: string): Promise<any> => {
+  getById: async (id: string): Promise<ParticipantResponse> => {
     const response = await fetch(`${API_URL}/api/participants/${id}`);
-    return handleResponse<any>(response);
+    return handleResponse<ParticipantResponse>(response);
+  },
+  
+  verifyTicket: async (payload: TicketQrPayload): Promise<ParticipantResponse> => {
+    const response = await fetch(`${API_URL}/api/participants/verify-ticket`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<ParticipantResponse>(response);
   },
 };
 

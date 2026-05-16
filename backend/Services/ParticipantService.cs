@@ -71,16 +71,24 @@ public class ParticipantService : IParticipantService
         // 5. Enqueue Ticket Generation if required
         if (eventEntity.GenerateTickets)
         {
-            var payload = new GenerateTicketJobPayload
+            try 
             {
-                ParticipantId = participant.Id,
-                EventId = eventEntity.Id
-            };
+                var payload = new GenerateTicketJobPayload
+                {
+                    ParticipantId = participant.Id,
+                    EventId = eventEntity.Id
+                };
 
-            var jobId = _backgroundJobClient.Enqueue<IGenerateTicketJob>(x => x.ExecuteAsync(payload));
-            
-            participant.TicketJobId = jobId;
-            participant.TicketStatus = "Pending";
+                var jobId = _backgroundJobClient.Enqueue<IGenerateTicketJob>(x => x.ExecuteAsync(payload));
+                
+                participant.TicketJobId = jobId;
+                participant.TicketStatus = "Pending";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to enqueue ticket generation: {ex.Message}");
+                participant.TicketStatus = "FailedToEnqueue";
+            }
             
             await _participantRepository.UpdateAsync(participant);
         }

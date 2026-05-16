@@ -11,7 +11,12 @@ public class TicketSecurityService : ITicketSecurityService
 
     public TicketSecurityService(IConfiguration configuration)
     {
-        _secretKey = configuration["Ticket:SecretKey"] ?? throw new InvalidOperationException("Ticket:SecretKey is not configured.");
+        _secretKey = configuration["Ticket:SecretKey"] ?? "dev_secret_key_neteg_2024_change_me_in_production";
+        
+        if (_secretKey == "dev_secret_key_neteg_2024_change_me_in_production")
+        {
+            Console.WriteLine("[WARNING] Ticket:SecretKey not found in configuration. Using default dev key.");
+        }
     }
 
     public string GenerateSignature(Guid participantId, Guid eventId)

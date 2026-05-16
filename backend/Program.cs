@@ -36,6 +36,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     };
     return new AmazonS3Client(storageConfig["AccessKey"], storageConfig["SecretKey"], config);
 });
+builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 builder.Services.AddCors(options =>
 {
@@ -75,7 +76,7 @@ builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseRedisStorage(builder.Configuration.GetValue<string>("Redis:ConnectionString") ?? "localhost:6379"));
+    .UseRedisStorage(builder.Configuration["Redis:ConnectionString"] ?? "redis:6379"));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

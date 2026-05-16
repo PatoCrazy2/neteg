@@ -21,6 +21,7 @@ public class ParticipantsController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterParticipantRequest request)
     {
+        Console.WriteLine($"[DEBUG] Register request received for event {request.EventId} and email {request.Email}");
         try
         {
             var result = await _participantService.RegisterAsync(request);

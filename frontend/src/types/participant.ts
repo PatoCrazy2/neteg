@@ -15,5 +15,13 @@ export interface ParticipantResponse {
     ticketUrl?: string;
     ticketJobId?: string;
     ticketStatus?: string;
+    attended: boolean;
+    checkInAt?: string;
     registeredAt: string;
+}
+
+export interface TicketQrPayload {
+    p: string; // Participant Id
+    e: string; // Event Id
+    s: string; // Signature
 }
