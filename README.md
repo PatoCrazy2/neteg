@@ -45,11 +45,11 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 | Gestión de eventos (Dashboard) | ✅ Completado |
 | Formularios dinámicos (JSONB) | ✅ Completado |
 | Landing Pages  | ✅ Completado |
-| Generación de pases QR | 🔜 En desarrollo |
+| Generación de pases QR | ✅ Completado |
 | Validación de acceso | 🔜 Pendiente |
 | Control de asistencia | 🔜 Pendiente |
 | Generación automática de certificados | 🔜 Pendiente |
-| Procesamiento asíncrono | 🟢 Arquitectura preparada |
+| Procesamiento asíncrono | ✅ Operacional (Hangfire) |
 
 ---
 
@@ -124,11 +124,13 @@ Las tareas pesadas como:
 
 se ejecutan fuera de la API principal para evitar bloqueos y mejorar escalabilidad.
 
-### 🔹 Redis como capa de procesamiento
+### 🔹 Redis + Hangfire como capa de procesamiento
 Redis se utiliza para:
 - cache
-- colas
+- colas persistentes (Hangfire)
 - comunicación async entre servicios
+
+Hangfire gestiona el ciclo de vida de las tareas (reintentos automáticos, monitoreo y persistencia).
 
 ### 🔹 MinIO como almacenamiento S3-compatible
 MinIO almacena:
@@ -155,10 +157,11 @@ Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga
 | Frontend | Next.js 15 + TypeScript |
 | UI | Tailwind CSS |
 | Backend | ASP.NET Core 8 Web API |
-| Worker Async | ASP.NET Background Worker |
+| Worker Async | ASP.NET Background Worker + Hangfire |
+| Generación QR | QRCoder |
 | Base de Datos | PostgreSQL 16 |
-| Cache / Colas | Redis 7 |
-| Storage | MinIO |
+| Cache / Colas | Redis 7 + Hangfire Storage |
+| Storage | MinIO / Cloudflare R2 (S3 Compatible) |
 | Infraestructura | Docker + Docker Compose |
 
 ---
@@ -301,10 +304,10 @@ Actualmente el proyecto se encuentra en etapa inicial de desarrollo (MVP).
 - ✅ Tailwind CSS
 
 ## Pendiente
-- 🔜 Generación QR (Worker Integration)
-- 🔜 Renderizado de certificados (Playwright)
-- 🔜 Sistema de Check-in móvil
-- 🔜 Notificaciones por correo electrónico
+- 🔜 Validación de acceso (Check-in móvil)
+- 🔜 Generación automática de certificados (Playwright)
+- 🔜 Sistema de plantillas para certificados
+- 🔜 Notificaciones por correo electrónico (SendGrid/Amazon SES)
 
 ---
 
