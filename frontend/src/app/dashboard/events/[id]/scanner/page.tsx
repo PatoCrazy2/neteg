@@ -27,7 +27,10 @@ type ScanStatus = "idle" | "scanning" | "processing" | "success" | "error" | "du
 
 export default function ScannerPage({ params }: ScannerPageProps) {
   const router = useRouter();
-  const { id: eventId } = use(params);
+  
+  // Resolvemos params con un enfoque dual para máxima compatibilidad
+  const resolvedParams = use(params);
+  const eventId = resolvedParams?.id;
   
   const [status, setStatus] = useState<ScanStatus>("idle");
   const [event, setEvent] = useState<Event | null>(null);
@@ -37,96 +40,163 @@ export default function ScannerPage({ params }: ScannerPageProps) {
   
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const lastScanTime = useRef<number>(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const failureCount = useRef(0);
+  
+  // Log inmediato de renderizado
+  console.log("[SCANNER] Renderizando ScannerPage. EventId:", eventId);
+
+  const stateRef = useRef({ status, eventId });
+  useEffect(() => {
+    stateRef.current = { status, eventId };
+  }, [status, eventId]);
 
   useEffect(() => {
+    if (!eventId) {
+      console.warn("[SCANNER] Esperando EventId...");
+      return;
+    }
+
+    console.log("[SCANNER] Iniciando efectos para:", eventId);
+    
     // Fetch event details
-    eventApi.getPublicEvent(eventId).then(setEvent).catch(console.error);
+    eventApi.getPublicEvent(eventId)
+      .then(ev => {
+        console.info("[SCANNER] Evento cargado exitosamente:", ev.name);
+        setEvent(ev);
+      })
+      .catch(err => {
+        console.error("[SCANNER] Error crítico cargando evento:", err);
+      });
 
-    // Initialize Scanner
-    const scanner = new Html5Qrcode("reader");
-    scannerRef.current = scanner;
-
-    startScanner();
+    // Pequeño delay para asegurar que el DOM esté listo y el div #reader exista
+    const timer = setTimeout(() => {
+      initScanner();
+    }, 800);
 
     return () => {
-      if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch(console.error);
+      clearTimeout(timer);
+      if (scannerRef.current) {
+        if (scannerRef.current.isScanning) {
+          console.log("[SCANNER] Deteniendo escaneo activo...");
+          scannerRef.current.stop()
+            .then(() => console.log("[SCANNER] Escaneo detenido con éxito"))
+            .catch(e => console.error("[SCANNER] Error al detener:", e));
+        }
       }
     };
   }, [eventId]);
 
-  const startScanner = async () => {
-    if (!scannerRef.current) return;
-    
+  const initScanner = async () => {
     try {
-      await scannerRef.current.start(
+      const element = document.getElementById("reader");
+      if (!element) {
+        console.error("[SCANNER] ❌ Error: No se encontró el elemento #reader en el DOM");
+        return;
+      }
+
+      console.log("[SCANNER] Creando instancia de Html5Qrcode...");
+      const scanner = new Html5Qrcode("reader");
+      scannerRef.current = scanner;
+
+      console.log("[SCANNER] Solicitando permisos de cámara...");
+      await scanner.start(
         { facingMode: "environment" },
         {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
+          fps: 15,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+              const size = Math.min(viewfinderWidth, viewfinderHeight) * 0.8;
+              return { width: size, height: size };
+          },
+          aspectRatio: 1.0
         },
         onScanSuccess,
         onScanFailure
       );
+      
+      console.log("[SCANNER] ✅ CÁMARA ACTIVA. Buscando códigos QR...");
       setIsCameraReady(true);
       setStatus("scanning");
     } catch (err) {
-      console.error("Camera error:", err);
-      setErrorMessage("No se pudo acceder a la cámara. Revisa los permisos.");
+      console.error("[SCANNER] ❌ ERROR AL INICIAR:", err);
+      setErrorMessage("Error de cámara: " + (err instanceof Error ? err.message : String(err)));
       setStatus("error");
     }
   };
 
   const parseQrText = (text: string): TicketQrPayload | null => {
     try {
-      // Formato: p:UUID|e:UUID|s:SIGNATURE
+      console.log("[SCANNER] Intentando parsear:", text);
+      // Formato esperado: p:UUID|e:UUID|s:SIGNATURE
       const parts = text.split("|");
-      if (parts.length !== 3) return null;
+      if (parts.length < 2) return null;
 
-      const p = parts[0].split(":")[1];
-      const e = parts[1].split(":")[1];
-      const s = parts.slice(2).join(":").replace("s:", ""); // Handle signatures with colons if any
+      const pPart = parts.find(p => p.startsWith("p:"));
+      const ePart = parts.find(p => p.startsWith("e:"));
+      const sPart = parts.find(p => p.startsWith("s:"));
 
-      if (!p || !e || !s) return null;
+      if (!pPart || !ePart || !sPart) {
+        console.warn("[SCANNER] Formato de partes inválido");
+        return null;
+      }
 
-      return { p, e, s };
+      return { 
+        p: pPart.replace("p:", ""), 
+        e: ePart.replace("e:", ""), 
+        s: sPart.replace("s:", "") 
+      };
     } catch (e) {
+      console.error("[SCANNER] Error en parseQrText:", e);
       return null;
     }
   };
 
   const onScanSuccess = async (decodedText: string) => {
+    // Usamos stateRef para obtener el estado actual real
+    const { status: currentStatus, eventId: currentEventId } = stateRef.current;
+    
     const now = Date.now();
-    if (now - lastScanTime.current < 3000) return; // Throttle 3s
-    if (status === "processing" || status === "success" || status === "error" || status === "duplicate") return;
+    if (now - lastScanTime.current < 2000) return; // Throttle 2s
+    
+    // Si ya estamos procesando o en un estado final, ignoramos
+    if (currentStatus !== "scanning") {
+       return;
+    }
 
+    console.log("[SCANNER] 🎯 QR detectado:", decodedText);
     lastScanTime.current = now;
     setStatus("processing");
 
-    const payload = parseQrText(decodedText);
+    const payload = parseQrText(decodedText.trim());
 
     if (!payload) {
-      handleResult("error", "Código QR no reconocido o formato inválido.");
+      console.warn("[SCANNER] ⚠️ QR con formato inválido");
+      handleResult("error", "Este código no es un boleto válido de Neteg.");
       return;
     }
 
+    console.log("[SCANNER] Payload extraído:", payload);
+
     // Pre-validación local de Evento
-    if (payload.e !== eventId) {
+    if (payload.e !== currentEventId) {
+      console.warn(`[SCANNER] ⚠️ Evento incorrecto. QR: ${payload.e}, Página: ${currentEventId}`);
       handleResult("wrong-event", "Este boleto pertenece a otro evento.");
       return;
     }
 
     try {
+      console.log("[SCANNER] Verificando ticket en API...");
       const participant = await participantApi.verifyTicket(payload);
+      console.log("[SCANNER] ✅ Ticket verificado para:", participant.fullName);
+      
       setLastParticipant(participant);
       handleResult("success");
       
-      // Feedback háptico si es compatible
+      // Feedback háptico
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate([100, 50, 100]);
       }
     } catch (err: any) {
+      console.error("[SCANNER] ❌ Error en verificación:", err);
       if (err.message.includes("409") || err.message.toLowerCase().includes("utilizado")) {
         handleResult("duplicate", "Este boleto ya fue validado anteriormente.");
       } else {
@@ -136,18 +206,24 @@ export default function ScannerPage({ params }: ScannerPageProps) {
   };
 
   const onScanFailure = (error: string) => {
-    // Too noisy, usually just means no QR in frame
+    // Solo logueamos una vez cada 60 frames para confirmar que el motor sigue vivo
+    // sin inundar la consola.
+    failureCount.current++;
+    if (failureCount.current % 60 === 0) {
+      console.debug("[SCANNER] Buscando QR... (ciclos:", failureCount.current, ")");
+    }
   };
 
   const handleResult = (newStatus: ScanStatus, message: string = "") => {
     setStatus(newStatus);
     setErrorMessage(message);
 
-    // Auto-reset after 4 seconds
+    // Auto-reset después de 4 segundos para permitir otro escaneo
     setTimeout(() => {
       setStatus("scanning");
       setLastParticipant(null);
       setErrorMessage("");
+      console.log("[SCANNER] Re-listo para el próximo código");
     }, 4000);
   };
 
