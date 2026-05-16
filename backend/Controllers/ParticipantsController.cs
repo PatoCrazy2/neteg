@@ -2,6 +2,7 @@ using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using shared.DTOs.Participants;
+using shared.DTOs;
 using System.Security.Claims;
 
 namespace backend.Controllers;
@@ -62,5 +63,23 @@ public class ParticipantsController : ControllerBase
         if (participant == null) return NoContent();
         
         return Ok(participant);
+    }
+
+    [HttpPost("verify-ticket")]
+    public async Task<IActionResult> VerifyTicket([FromBody] TicketQrPayload request)
+    {
+        try
+        {
+            var result = await _participantService.VerifyTicketAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
