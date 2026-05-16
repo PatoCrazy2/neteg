@@ -1,0 +1,35 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace shared.DTOs.Participants;
+
+public class RegisterParticipantRequest
+{
+    [Required]
+    public Guid EventId { get; set; }
+
+    public Guid? UserId { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string FullName { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    [MaxLength(150)]
+    public string Email { get; set; } = string.Empty;
+
+    // Dictionary for dynamic answers: { "questionId": "Answer" }
+    public Dictionary<string, string> FormAnswers { get; set; } = new();
+}
+
+public class ParticipantResponse
+{
+    public Guid Id { get; set; }
+    public Guid EventId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public DateTime RegisteredAt { get; set; }
+}
