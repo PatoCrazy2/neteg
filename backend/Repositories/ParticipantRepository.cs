@@ -41,6 +41,12 @@ public class ParticipantRepository : IParticipantRepository
             .AnyAsync(p => p.EventId == eventId && p.Email.ToLower() == email.ToLower());
     }
 
+    public async Task<Participant?> GetUserParticipationAsync(Guid eventId, Guid userId)
+    {
+        return await _context.Participants
+            .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+    }
+
     public async Task UpdateAsync(Participant participant)
     {
         _context.Participants.Update(participant);

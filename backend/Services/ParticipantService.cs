@@ -103,6 +103,12 @@ public class ParticipantService : IParticipantService
         return participants.Select(MapToResponse);
     }
 
+    public async Task<ParticipantResponse?> GetUserParticipationAsync(Guid eventId, Guid userId)
+    {
+        var participant = await _participantRepository.GetUserParticipationAsync(eventId, userId);
+        return participant != null ? MapToResponse(participant) : null;
+    }
+
     private ParticipantResponse MapToResponse(Participant participant)
     {
         return new ParticipantResponse

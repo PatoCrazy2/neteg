@@ -1,6 +1,8 @@
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using shared.DTOs.Participants;
+using System.Security.Claims;
 
 namespace backend.Controllers;
 
@@ -42,5 +44,23 @@ public class ParticipantsController : ControllerBase
     {
         var participants = await _participantService.GetByEventIdAsync(eventId);
         return Ok(participants);
+    }
+
+    [HttpGet("event/{eventId}/me")]
+    [Authorize]
+    public async Task<IActionResult> GetMyParticipation(Guid eventId)
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var participant = await _participantService.GetUserParticipationAsync(eventId, userId);
+        
+        // If not found, it's not necessarily an error, just return a 204 No Content or null object.
+        if (participant == null) return NoContent();
+        
+        return Ok(participant);
     }
 }

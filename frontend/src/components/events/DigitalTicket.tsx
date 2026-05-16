@@ -21,20 +21,16 @@ export function DigitalTicket({ event, participant: initialParticipant }: Digita
     if (initialParticipant) {
       setParticipant(initialParticipant);
       setLoading(false);
-      return;
     }
 
     // If no participant provided but event requires tickets, fetch it
     if (event.generateTickets) {
       const fetchParticipant = async () => {
         try {
-          // This assumes we have an endpoint or we can find the participation
-          // For now, let's try to get it via the event ID for the current user
-          const data = await participantApi.getByEventId(event.id);
-          // In a real scenario, this would return the specific participation for the logged user
-          // For now, if it returns a list, we take the first one (or the one matching our user)
-          if (Array.isArray(data) && data.length > 0) {
-            setParticipant(data[0]);
+          // Obtener la participación exacta del usuario logueado para este evento
+          const data = await participantApi.getMyParticipation(event.id);
+          if (data) {
+            setParticipant(data);
           }
         } catch (err) {
           console.error("Error fetching participant for ticket", err);
