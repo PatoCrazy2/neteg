@@ -5,5 +5,6 @@ namespace backend.Services;
 public interface IParticipantService
 {
     Task<ParticipantResponse> RegisterAsync(RegisterParticipantRequest request);
+    Task<ParticipantResponse?> GetByIdAsync(Guid id);
     Task<IEnumerable<ParticipantResponse>> GetByEventIdAsync(Guid eventId);
 }
