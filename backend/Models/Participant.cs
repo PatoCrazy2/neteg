@@ -35,5 +35,9 @@ public class Participant
     [Column(TypeName = "jsonb")]
     public string FormAnswers { get; set; } = "{}";
 
+    public string? TicketUrl { get; set; }
+    public string? TicketJobId { get; set; }
+    public string? TicketStatus { get; set; }
+
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 }

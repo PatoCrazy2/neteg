@@ -45,6 +45,9 @@ public class Event
     [Column(TypeName = "jsonb")]
     public string? SocialLinks { get; set; }
 
+    [Required]
+    public bool GenerateTickets { get; set; } = true;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation property for participants
