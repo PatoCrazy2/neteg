@@ -14,6 +14,7 @@ export interface Event {
   socialLinks?: string;
   organizerAvatarUrl?: string;
   organizerBio?: string;
+  generateTickets: boolean;
   createdAt: string;
 }
 
@@ -27,4 +28,5 @@ export interface CreateEventRequest {
   capacity?: number;
   formSchema?: string;
   socialLinks?: string;
+  generateTickets: boolean;
 }

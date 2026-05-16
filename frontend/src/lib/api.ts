@@ -117,6 +117,11 @@ export const participantApi = {
     });
     return handleResponse<any[]>(response);
   },
+
+  getById: async (id: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/api/participants/${id}`);
+    return handleResponse<any>(response);
+  },
 };
 
 // Helper to get stored token

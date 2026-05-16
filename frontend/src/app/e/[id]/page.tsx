@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, MapPin, Clock, CheckCircle2, Loader2, User, Mail, ChevronRight, Globe } from "lucide-react";
+import { Calendar, MapPin, Clock, CheckCircle2, Loader2, User, Mail, ChevronRight, Globe, Download, Share2 } from "lucide-react";
 import { TopNavbar } from "@/components/layouts/TopNavbar";
+import { DigitalTicket } from "@/components/events/DigitalTicket";
 
 const Instagram = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
   <svg
@@ -69,6 +70,7 @@ export default function PublicEventPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [participant, setParticipant] = useState<any>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -144,8 +146,27 @@ export default function PublicEventPage() {
         }
       });
 
-      await participantApi.register(payload);
+      const result = await participantApi.register(payload);
+      setParticipant(result);
       setSubmitted(true);
+
+      // Start polling for ticket if required
+      if (event?.generateTickets && result.ticketStatus !== 'Completed') {
+        const pollInterval = setInterval(async () => {
+          try {
+            const updated = await participantApi.getById(result.id);
+            setParticipant(updated);
+            if (updated.ticketStatus === 'Completed' || updated.ticketStatus === 'Failed') {
+              clearInterval(pollInterval);
+            }
+          } catch (err) {
+            console.error("Polling error", err);
+          }
+        }, 3000);
+
+        // Cleanup after 1 minute
+        setTimeout(() => clearInterval(pollInterval), 60000);
+      }
     } catch (err) {
       console.error(err);
       alert(err instanceof Error ? err.message : "Error al procesar el registro. Inténtalo de nuevo.");
@@ -422,13 +443,19 @@ export default function PublicEventPage() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/[0.02] border border-[#B9B4FF]/30 rounded-3xl p-12 text-center"
+                  className="space-y-8"
                 >
-                  <div className="w-16 h-16 rounded-full bg-[#B9B4FF]/10 flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle2 size={32} className="text-[#B9B4FF]" />
+                  <div className="bg-white/[0.02] border border-[#B9B4FF]/30 rounded-3xl p-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-[#B9B4FF]/10 flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 size={24} className="text-[#B9B4FF]" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-1">¡Registro Exitoso!</h2>
+                    <p className="text-white/40 text-xs max-w-xs mx-auto">Tu lugar ha sido reservado. Aquí tienes tu comprobante.</p>
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">¡Todo listo!</h2>
-                  <p className="text-white/40 text-sm max-w-xs mx-auto">Tu registro ha sido procesado correctamente. Nos vemos en el evento.</p>
+
+                  {event && (
+                    <DigitalTicket event={event} participant={participant} />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

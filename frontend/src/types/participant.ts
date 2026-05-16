@@ -12,5 +12,8 @@ export interface ParticipantResponse {
     fullName: string;
     email: string;
     status: string;
+    ticketUrl?: string;
+    ticketJobId?: string;
+    ticketStatus?: string;
     registeredAt: string;
 }
