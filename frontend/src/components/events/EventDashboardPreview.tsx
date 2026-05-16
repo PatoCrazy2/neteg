@@ -1,16 +1,37 @@
 "use client";
 
 import { Event } from "@/types/event";
-import { motion } from "framer-motion";
-import { Users, BarChart3, Settings, ShieldCheck, CheckCircle2, MoreHorizontal, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, BarChart3, Settings, ShieldCheck, CheckCircle2, MoreHorizontal, ExternalLink, Mail, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { participantApi } from "@/lib/api";
+import { ParticipantResponse } from "@/types/participant";
 
 interface EventDashboardPreviewProps {
   event: Event;
 }
 
 export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
+  const [participants, setParticipants] = useState<ParticipantResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      try {
+        const data = await participantApi.getByEventId(event.id);
+        setParticipants(data);
+      } catch (err) {
+        console.error("Error fetching participants:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchParticipants();
+  }, [event.id]);
+
   const capacity = event.capacity || 100;
-  const registered = 45; // Mock data
+  const registered = participants.length;
   const percentage = Math.round((registered / capacity) * 100);
 
   return (
@@ -22,7 +43,9 @@ export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
             <Users className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white tracking-tight">{registered}</div>
+            <div className="text-2xl font-bold text-white tracking-tight">
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin text-white/20" /> : registered}
+            </div>
             <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Asistentes</div>
           </div>
         </div>
@@ -32,7 +55,9 @@ export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
             <BarChart3 className="w-5 h-5 text-[#B9B4FF]" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white tracking-tight">{percentage}%</div>
+            <div className="text-2xl font-bold text-white tracking-tight">
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin text-white/20" /> : `${percentage}%`}
+            </div>
             <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Capacidad</div>
           </div>
         </div>
@@ -51,6 +76,58 @@ export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
             transition={{ duration: 1, ease: "easeOut" }}
             className="h-full bg-gradient-to-r from-[#B9B4FF] to-[#9C8CFF] shadow-[0_0_10px_rgba(185,180,255,0.5)]"
           />
+        </div>
+      </div>
+
+      {/* Recent Participants Section */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between px-1">
+          <h4 className="text-sm font-bold text-white">Participantes Recientes</h4>
+          <span className="text-[10px] font-bold text-[#B9B4FF] uppercase tracking-wider">{participants.length} total</span>
+        </div>
+
+        <div className="space-y-2">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-[#B9B4FF]/40" />
+            </div>
+          ) : participants.length === 0 ? (
+            <div className="p-8 rounded-2xl bg-white/[0.01] border border-dashed border-white/5 text-center">
+              <p className="text-white/20 text-xs italic">Nadie se ha registrado aún.</p>
+            </div>
+          ) : (
+            participants.slice(0, 5).map((p) => (
+              <motion.div 
+                key={p.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-[#B9B4FF]/10 flex items-center justify-center text-[10px] font-bold text-[#B9B4FF] flex-shrink-0">
+                    {p.fullName.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-white truncate">{p.fullName}</div>
+                    <div className="text-[10px] text-white/30 truncate">{p.email}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-tight ${
+                    p.status === 'Registered' ? 'bg-green-500/10 text-green-400/80' : 'bg-white/5 text-white/30'
+                  }`}>
+                    {p.status}
+                  </span>
+                </div>
+              </motion.div>
+            ))
+          )}
+          
+          {participants.length > 5 && (
+            <button className="w-full py-2 text-[10px] font-bold text-[#B9B4FF] uppercase tracking-widest hover:text-white transition-colors">
+              Ver todos los asistentes ({participants.length})
+            </button>
+          )}
         </div>
       </div>
 
@@ -130,13 +207,15 @@ export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
           </button>
         </div>
 
-        {/* TODO: Link to collaborator's forms/management page below */}
         <button className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#B9B4FF] text-black font-bold text-xs hover:bg-[#9C8CFF] transition-all">
           <Settings className="w-4 h-4" />
           Configuración Avanzada
         </button>
 
-        <button className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all">
+        <button 
+          onClick={() => window.open(`/e/${event.id}`, '_blank')}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all"
+        >
           <ExternalLink className="w-4 h-4" />
           Ver Landing del Evento
         </button>

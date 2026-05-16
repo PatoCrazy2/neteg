@@ -110,6 +110,13 @@ export const participantApi = {
     });
     return handleResponse<any>(response);
   },
+
+  getByEventId: async (eventId: string): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/api/participants/event/${eventId}`, {
+      headers: getHeaders(),
+    });
+    return handleResponse<any[]>(response);
+  },
 };
 
 // Helper to get stored token
