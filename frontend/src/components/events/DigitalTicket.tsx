@@ -4,13 +4,70 @@ import { Event } from "@/types/event";
 import { ParticipantResponse } from "@/types/participant";
 import { motion } from "framer-motion";
 import { QrCode, MapPin, Calendar, Clock, User, Share2, Download, Loader2, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { participantApi } from "@/lib/api";
 
 interface DigitalTicketProps {
   event: Event;
   participant?: ParticipantResponse;
 }
 
-export function DigitalTicket({ event, participant }: DigitalTicketProps) {
+export function DigitalTicket({ event, participant: initialParticipant }: DigitalTicketProps) {
+  const [participant, setParticipant] = useState<ParticipantResponse | undefined>(initialParticipant);
+  const [loading, setLoading] = useState(!initialParticipant && event.generateTickets);
+
+  useEffect(() => {
+    // If we have an initial participant, sync it
+    if (initialParticipant) {
+      setParticipant(initialParticipant);
+      setLoading(false);
+      return;
+    }
+
+    // If no participant provided but event requires tickets, fetch it
+    if (event.generateTickets) {
+      const fetchParticipant = async () => {
+        try {
+          // This assumes we have an endpoint or we can find the participation
+          // For now, let's try to get it via the event ID for the current user
+          const data = await participantApi.getByEventId(event.id);
+          // In a real scenario, this would return the specific participation for the logged user
+          // For now, if it returns a list, we take the first one (or the one matching our user)
+          if (Array.isArray(data) && data.length > 0) {
+            setParticipant(data[0]);
+          }
+        } catch (err) {
+          console.error("Error fetching participant for ticket", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchParticipant();
+    }
+  }, [event.id, initialParticipant, event.generateTickets]);
+
+  // Polling logic if status is pending
+  useEffect(() => {
+    if (!participant || participant.ticketStatus === 'Completed' || participant.ticketStatus === 'Failed' || participant.ticketStatus === 'NotRequired') {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const updated = await participantApi.getById(participant.id);
+        setParticipant(updated);
+        if (updated.ticketStatus === 'Completed' || updated.ticketStatus === 'Failed') {
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [participant?.id, participant?.ticketStatus]);
+
   const date = new Date(event.date);
   const formattedDate = date.toLocaleDateString('es-ES', {
     day: 'numeric',
@@ -22,7 +79,7 @@ export function DigitalTicket({ event, participant }: DigitalTicketProps) {
     minute: '2-digit'
   });
 
-  const isGenerating = participant?.ticketStatus === 'Pending' || participant?.ticketStatus === 'Processing';
+  const isGenerating = loading || participant?.ticketStatus === 'Pending' || participant?.ticketStatus === 'Processing';
   const isFailed = participant?.ticketStatus === 'Failed';
   const isCompleted = participant?.ticketStatus === 'Completed' && participant?.ticketUrl;
   const notRequired = !event.generateTickets || participant?.ticketStatus === 'NotRequired';
@@ -80,9 +137,9 @@ export function DigitalTicket({ event, participant }: DigitalTicketProps) {
         </div>
 
         {/* Bottom Section (Content depending on status) */}
-        <div className="p-8 pt-6 bg-white/[0.02] flex flex-col items-center">
+        <div className="p-8 pt-6 bg-white/[0.02] flex flex-col items-center min-h-[200px] justify-center">
           {notRequired ? (
-            <div className="text-center py-10">
+            <div className="text-center py-4">
               <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="w-8 h-8 text-green-400" />
               </div>
@@ -90,12 +147,12 @@ export function DigitalTicket({ event, participant }: DigitalTicketProps) {
               <p className="text-white/40 text-xs">Este evento no requiere boleto digital.</p>
             </div>
           ) : isGenerating ? (
-            <div className="text-center py-10">
+            <div className="text-center py-4">
               <div className="w-16 h-16 bg-[#B9B4FF]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Loader2 className="w-8 h-8 text-[#B9B4FF] animate-spin" />
               </div>
-              <h3 className="text-white font-bold text-lg mb-1">Generando tu boleto...</h3>
-              <p className="text-white/40 text-xs">Esto tomará solo unos segundos.</p>
+              <h3 className="text-white font-bold text-lg mb-1">Preparando...</h3>
+              <p className="text-white/40 text-xs">Generando tu boleto digital.</p>
             </div>
           ) : isFailed ? (
             <div className="text-center py-10">
