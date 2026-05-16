@@ -46,8 +46,8 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 | Formularios dinámicos (JSONB) | ✅ Completado |
 | Landing Pages  | ✅ Completado |
 | Generación de pases QR (Seguros) | ✅ Completado |
-| Validación de acceso | 🔜 Pendiente |
-| Control de asistencia | 🔜 Pendiente |
+| Validación de acceso (Escáner) | ✅ Completado |
+| Control de asistencia | ✅ Completado |
 | Generación automática de certificados | 🔜 Pendiente |
 | Procesamiento asíncrono | ✅ Operacional (Hangfire) |
 
@@ -311,7 +311,6 @@ Actualmente el proyecto se encuentra en etapa inicial de desarrollo (MVP).
 - ✅ Tailwind CSS
 
 ## Pendiente
-- 🔜 Validación de acceso (Check-in móvil)
 - 🔜 Generación automática de certificados (Playwright)
 - 🔜 Sistema de plantillas para certificados
 - 🔜 Notificaciones por correo electrónico (SendGrid/Amazon SES)
