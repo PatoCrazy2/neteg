@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Amazon.S3;
+using Hangfire;
+using Hangfire.Redis.StackExchange;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Hangfire Configuration
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseRedisStorage(builder.Configuration.GetValue<string>("Redis:ConnectionString") ?? "localhost:6379"));
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -96,5 +105,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHangfireDashboard("/hangfire");
 
 app.Run();
