@@ -101,6 +101,17 @@ export const eventApi = {
   },
 };
 
+export const participantApi = {
+  register: async (data: any): Promise<any> => {
+    const response = await fetch(`${API_URL}/api/participants/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<any>(response);
+  },
+};
+
 // Helper to get stored token
 export const getToken = () => typeof window !== "undefined" ? localStorage.getItem("token") : null;
 

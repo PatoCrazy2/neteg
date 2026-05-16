@@ -41,8 +41,9 @@ const Twitter = ({ size = 24, className = "" }: { size?: number, className?: str
     <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
   </svg>
 );
-import { eventApi } from "@/lib/api";
+import { eventApi, participantApi, getToken } from "@/lib/api";
 import { Event } from "@/types/event";
+import { RegisterParticipantRequest } from "@/types/participant";
 
 interface FormQuestion {
   id: string;
@@ -123,10 +124,34 @@ export default function PublicEventPage() {
     setErrors({});
     setSubmitting(true);
 
-    // Simulate submission (future: POST to backend)
-    await new Promise(res => setTimeout(res, 1500));
-    setSubmitted(true);
-    setSubmitting(false);
+    try {
+      const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+      const user = storedUser ? JSON.parse(storedUser) : null;
+
+      const payload: RegisterParticipantRequest = {
+        eventId: id,
+        userId: user?.id,
+        fullName: answers["q_name"] as string,
+        email: answers["q_email"] as string,
+        formAnswers: {}
+      };
+
+      // Bundle dynamic answers (excluding core fields)
+      Object.keys(answers).forEach(key => {
+        if (key !== "q_name" && key !== "q_email") {
+          const val = answers[key];
+          payload.formAnswers[key] = Array.isArray(val) ? val.join(", ") : (val as string);
+        }
+      });
+
+      await participantApi.register(payload);
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Error al procesar el registro. Inténtalo de nuevo.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
