@@ -11,6 +11,7 @@ public interface IStorageService
     /// <param name="folder">Optional folder path.</param>
     /// <returns>The public URL of the uploaded file.</returns>
     Task<string> UploadFileAsync(IFormFile file, string folder = "uploads");
+    Task<string> UploadStreamAsync(Stream stream, string fileName, string contentType, string folder = "uploads");
 
     /// <summary>
     /// Deletes a file from the storage provider.

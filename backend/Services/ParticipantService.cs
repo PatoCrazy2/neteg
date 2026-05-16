@@ -2,6 +2,9 @@ using backend.Models;
 using backend.Repositories;
 using shared.DTOs.Participants;
 using System.Text.Json;
+using Hangfire;
+using shared.DTOs;
+using shared.Interfaces;
 
 namespace backend.Services;
 
@@ -10,15 +13,18 @@ public class ParticipantService : IParticipantService
     private readonly IParticipantRepository _participantRepository;
     private readonly IEventRepository _eventRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     public ParticipantService(
         IParticipantRepository participantRepository, 
         IEventRepository eventRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IBackgroundJobClient backgroundJobClient)
     {
         _participantRepository = participantRepository;
         _eventRepository = eventRepository;
         _userRepository = userRepository;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     public async Task<ParticipantResponse> RegisterAsync(RegisterParticipantRequest request)
@@ -59,8 +65,36 @@ public class ParticipantService : IParticipantService
 
         await _participantRepository.AddAsync(participant);
 
+        // 5. Enqueue Ticket Generation if required
+        if (eventEntity.GenerateTickets)
+        {
+            var payload = new GenerateTicketJobPayload
+            {
+                ParticipantId = participant.Id,
+                EventId = eventEntity.Id
+            };
+
+            var jobId = _backgroundJobClient.Enqueue<IGenerateTicketJob>(x => x.ExecuteAsync(payload));
+            
+            participant.TicketJobId = jobId;
+            participant.TicketStatus = "Pending";
+            
+            await _participantRepository.UpdateAsync(participant);
+        }
+        else
+        {
+            participant.TicketStatus = "NotRequired";
+            await _participantRepository.UpdateAsync(participant);
+        }
+
         // 4. Return response
         return MapToResponse(participant);
+    }
+
+    public async Task<ParticipantResponse?> GetByIdAsync(Guid id)
+    {
+        var participant = await _participantRepository.GetByIdAsync(id);
+        return participant != null ? MapToResponse(participant) : null;
     }
 
     public async Task<IEnumerable<ParticipantResponse>> GetByEventIdAsync(Guid eventId)
@@ -78,6 +112,9 @@ public class ParticipantService : IParticipantService
             FullName = participant.FullName,
             Email = participant.Email,
             Status = participant.Status,
+            TicketUrl = participant.TicketUrl,
+            TicketJobId = participant.TicketJobId,
+            TicketStatus = participant.TicketStatus,
             RegisteredAt = participant.RegisteredAt
         };
     }

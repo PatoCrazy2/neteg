@@ -31,5 +31,8 @@ public class ParticipantResponse
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
+    public string? TicketUrl { get; set; }
+    public string? TicketJobId { get; set; }
+    public string? TicketStatus { get; set; }
     public DateTime RegisteredAt { get; set; }
 }

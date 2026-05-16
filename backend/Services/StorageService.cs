@@ -23,21 +23,22 @@ public class StorageService : IStorageService
     public async Task<string> UploadFileAsync(IFormFile file, string folder = "uploads")
     {
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        var key = $"{folder}/{fileName}";
+        using var stream = file.OpenReadStream();
+        return await UploadStreamAsync(stream, fileName, file.ContentType, folder);
+    }
 
-        using var newStream = new MemoryStream();
-        await file.CopyToAsync(newStream);
+    public async Task<string> UploadStreamAsync(Stream stream, string fileName, string contentType, string folder = "uploads")
+    {
+        var key = $"{folder}/{fileName}";
 
         var uploadRequest = new TransferUtilityUploadRequest
         {
-            InputStream = newStream,
+            InputStream = stream,
             Key = key,
             BucketName = _bucketName,
-            ContentType = file.ContentType
+            ContentType = contentType
         };
 
-        // En MinIO/S3, para que sea público sin presigned URL persistente, 
-        // el bucket debe tener política pública o usamos CannedACL.
         uploadRequest.CannedACL = S3CannedACL.PublicRead;
 
         var fileTransferUtility = new TransferUtility(_s3Client);

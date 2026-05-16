@@ -9,4 +9,5 @@ public interface IParticipantRepository
     Task<Participant?> GetByIdAsync(Guid id);
     Task<IEnumerable<Participant>> GetByEventIdAsync(Guid eventId);
     Task<bool> ExistsAsync(Guid eventId, string email);
+    Task UpdateAsync(Participant participant);
 }

@@ -29,6 +29,14 @@ public class ParticipantsController : ControllerBase
         }
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var participant = await _participantService.GetByIdAsync(id);
+        if (participant == null) return NotFound();
+        return Ok(participant);
+    }
+
     [HttpGet("event/{eventId}")]
     public async Task<IActionResult> GetByEventId(Guid eventId)
     {

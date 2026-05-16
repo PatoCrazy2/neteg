@@ -40,4 +40,10 @@ public class ParticipantRepository : IParticipantRepository
         return await _context.Participants
             .AnyAsync(p => p.EventId == eventId && p.Email.ToLower() == email.ToLower());
     }
+
+    public async Task UpdateAsync(Participant participant)
+    {
+        _context.Participants.Update(participant);
+        await _context.SaveChangesAsync();
+    }
 }
