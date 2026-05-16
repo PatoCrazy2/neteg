@@ -42,7 +42,10 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 |---|---|
 | Registro de asistentes | ✅ Completado |
 | Autenticación (Local + Google) | ✅ Completado |
-| Generación de pases QR | 🔜 Pendiente |
+| Gestión de eventos (Dashboard) | ✅ Completado |
+| Formularios dinámicos (JSONB) | ✅ Completado |
+| Landing Pages  | ✅ Completado |
+| Generación de pases QR | 🔜 En desarrollo |
 | Validación de acceso | 🔜 Pendiente |
 | Control de asistencia | 🔜 Pendiente |
 | Generación automática de certificados | 🔜 Pendiente |
@@ -135,6 +138,13 @@ MinIO almacena:
 - assets generados
 
 evitando depender del filesystem local.
+
+### 🔹 Formularios Dinámicos con PostgreSQL JSONB
+Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga su propio esquema de formulario. Esto permite:
+- Flexibilidad total para el organizador.
+- Sin necesidad de migraciones de base de datos al añadir preguntas.
+- Consultas eficientes y almacenamiento compacto.
+
 
 ---
 
@@ -291,12 +301,10 @@ Actualmente el proyecto se encuentra en etapa inicial de desarrollo (MVP).
 - ✅ Tailwind CSS
 
 ## Pendiente
-- 🔜 Autenticación JWT
-- 🔜 Modelado de base de datos
-- 🔜 Gestión de eventos
-- 🔜 Sistema de asistentes
-- 🔜 Generación QR
-- 🔜 Renderizado de certificados
+- 🔜 Generación QR (Worker Integration)
+- 🔜 Renderizado de certificados (Playwright)
+- 🔜 Sistema de Check-in móvil
+- 🔜 Notificaciones por correo electrónico
 
 ---
 
