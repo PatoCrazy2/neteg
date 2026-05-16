@@ -9,11 +9,16 @@ public class ParticipantService : IParticipantService
 {
     private readonly IParticipantRepository _participantRepository;
     private readonly IEventRepository _eventRepository;
+    private readonly IUserRepository _userRepository;
 
-    public ParticipantService(IParticipantRepository participantRepository, IEventRepository eventRepository)
+    public ParticipantService(
+        IParticipantRepository participantRepository, 
+        IEventRepository eventRepository,
+        IUserRepository userRepository)
     {
         _participantRepository = participantRepository;
         _eventRepository = eventRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<ParticipantResponse> RegisterAsync(RegisterParticipantRequest request)
@@ -28,12 +33,23 @@ public class ParticipantService : IParticipantService
         if (alreadyRegistered)
             throw new Exception("Este correo ya está registrado para este evento.");
 
-        // 3. Create participant
+        // 3. Link to user if not provided but email matches an existing user
+        var userId = request.UserId;
+        if (userId == null)
+        {
+            var user = await _userRepository.GetByEmailAsync(request.Email);
+            if (user != null)
+            {
+                userId = user.Id;
+            }
+        }
+
+        // 4. Create participant
         var participant = new Participant
         {
             Id = Guid.NewGuid(),
             EventId = request.EventId,
-            UserId = request.UserId,
+            UserId = userId,
             FullName = request.FullName,
             Email = request.Email,
             Status = "Registered",
