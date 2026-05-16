@@ -20,6 +20,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 // Services
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<ITicketSecurityService, TicketSecurityService>();
 
 // S3 Configuration
 var storageConfig = builder.Configuration.GetSection("Storage");

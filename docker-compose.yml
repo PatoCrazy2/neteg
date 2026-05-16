@@ -102,6 +102,7 @@ services:
       Storage__AccessKey: ${MINIO_ROOT_USER}
       Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
       Storage__BucketName: ${MINIO_BUCKET}
+      Ticket__SecretKey: ${TICKET_SECRET_KEY}
 
     ports:
       - "${API_PORT}:8080"
@@ -137,6 +138,7 @@ services:
       Storage__AccessKey: ${MINIO_ROOT_USER}
       Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
       Storage__BucketName: ${MINIO_BUCKET}
+      Ticket__SecretKey: ${TICKET_SECRET_KEY}
 
     networks:
       - neteg_network

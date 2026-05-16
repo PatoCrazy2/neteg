@@ -8,6 +8,7 @@ using System.Text;
 using Amazon.S3;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using shared.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,7 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IParticipantRepository, ParticipantRepository>();
 builder.Services.AddScoped<IParticipantService, ParticipantService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<ITicketSecurityService, TicketSecurityService>();
 
 // Storage / MinIO Configuration
 var storageConfig = builder.Configuration.GetSection("Storage");
