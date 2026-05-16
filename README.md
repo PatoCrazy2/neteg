@@ -147,6 +147,7 @@ evitando depender del filesystem local.
 ### 🔹 Seguridad Criptográfica de Boletos
 Los boletos no son simples IDs; contienen un payload firmado con **HMAC-SHA256** que vincula al participante con su evento específico, previniendo falsificaciones y el uso de tickets en eventos ajenos.
 
+### 🔹 Formularios Dinámicos con PostgreSQL JSONB
 Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga su propio esquema de formulario. Esto permite:
 - Flexibilidad total para el organizador.
 - Sin necesidad de migraciones de base de datos al añadir preguntas.

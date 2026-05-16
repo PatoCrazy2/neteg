@@ -39,5 +39,8 @@ public class Participant
     public string? TicketJobId { get; set; }
     public string? TicketStatus { get; set; }
 
+    public bool Attended { get; set; } = false;
+    public DateTime? CheckInAt { get; set; }
+
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 }
