@@ -14,17 +14,20 @@ public class ParticipantService : IParticipantService
     private readonly IEventRepository _eventRepository;
     private readonly IUserRepository _userRepository;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly ITicketSecurityService _ticketSecurityService;
 
     public ParticipantService(
         IParticipantRepository participantRepository, 
         IEventRepository eventRepository,
         IUserRepository userRepository,
-        IBackgroundJobClient backgroundJobClient)
+        IBackgroundJobClient backgroundJobClient,
+        ITicketSecurityService ticketSecurityService)
     {
         _participantRepository = participantRepository;
         _eventRepository = eventRepository;
         _userRepository = userRepository;
         _backgroundJobClient = backgroundJobClient;
+        _ticketSecurityService = ticketSecurityService;
     }
 
     public async Task<ParticipantResponse> RegisterAsync(RegisterParticipantRequest request)
@@ -68,16 +71,24 @@ public class ParticipantService : IParticipantService
         // 5. Enqueue Ticket Generation if required
         if (eventEntity.GenerateTickets)
         {
-            var payload = new GenerateTicketJobPayload
+            try 
             {
-                ParticipantId = participant.Id,
-                EventId = eventEntity.Id
-            };
+                var payload = new GenerateTicketJobPayload
+                {
+                    ParticipantId = participant.Id,
+                    EventId = eventEntity.Id
+                };
 
-            var jobId = _backgroundJobClient.Enqueue<IGenerateTicketJob>(x => x.ExecuteAsync(payload));
-            
-            participant.TicketJobId = jobId;
-            participant.TicketStatus = "Pending";
+                var jobId = _backgroundJobClient.Enqueue<IGenerateTicketJob>(x => x.ExecuteAsync(payload));
+                
+                participant.TicketJobId = jobId;
+                participant.TicketStatus = "Pending";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to enqueue ticket generation: {ex.Message}");
+                participant.TicketStatus = "FailedToEnqueue";
+            }
             
             await _participantRepository.UpdateAsync(participant);
         }
@@ -109,6 +120,45 @@ public class ParticipantService : IParticipantService
         return participant != null ? MapToResponse(participant) : null;
     }
 
+    public async Task<ParticipantResponse> VerifyTicketAsync(TicketQrPayload payload)
+    {
+        // 1. Cryptographic Validation
+        var isValid = _ticketSecurityService.VerifySignature(payload.p, payload.e, payload.s);
+        if (!isValid)
+        {
+            throw new Exception("Firma digital inválida. Posible intento de fraude.");
+        }
+
+        // 2. Fetch Participant
+        var participant = await _participantRepository.GetByIdAsync(payload.p);
+        if (participant == null)
+        {
+            throw new Exception("El participante no existe.");
+        }
+
+        // 3. Event Validation
+        if (participant.EventId != payload.e)
+        {
+            throw new Exception("El boleto no corresponde a este evento.");
+        }
+
+        // 4. Double Entry Prevention
+        if (participant.Attended)
+        {
+            // Throwing a custom exception message that we can catch in controller to return 409
+            throw new InvalidOperationException("Este boleto ya ha sido utilizado.");
+        }
+
+        // 5. Register Attendance
+        participant.Attended = true;
+        participant.CheckInAt = DateTime.UtcNow;
+        participant.Status = "CheckedIn";
+
+        await _participantRepository.UpdateAsync(participant);
+
+        return MapToResponse(participant);
+    }
+
     private ParticipantResponse MapToResponse(Participant participant)
     {
         return new ParticipantResponse
@@ -121,6 +171,8 @@ public class ParticipantService : IParticipantService
             TicketUrl = participant.TicketUrl,
             TicketJobId = participant.TicketJobId,
             TicketStatus = participant.TicketStatus,
+            Attended = participant.Attended,
+            CheckInAt = participant.CheckInAt,
             RegisteredAt = participant.RegisteredAt
         };
     }

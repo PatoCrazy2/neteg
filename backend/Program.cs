@@ -8,6 +8,7 @@ using System.Text;
 using Amazon.S3;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using shared.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,7 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IParticipantRepository, ParticipantRepository>();
 builder.Services.AddScoped<IParticipantService, ParticipantService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<ITicketSecurityService, TicketSecurityService>();
 
 // Storage / MinIO Configuration
 var storageConfig = builder.Configuration.GetSection("Storage");
@@ -34,6 +36,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     };
     return new AmazonS3Client(storageConfig["AccessKey"], storageConfig["SecretKey"], config);
 });
+builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 builder.Services.AddCors(options =>
 {
@@ -73,7 +76,7 @@ builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseRedisStorage(builder.Configuration.GetValue<string>("Redis:ConnectionString") ?? "localhost:6379"));
+    .UseRedisStorage(builder.Configuration["Redis:ConnectionString"] ?? "redis:6379"));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

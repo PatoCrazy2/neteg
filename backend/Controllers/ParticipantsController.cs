@@ -2,6 +2,7 @@ using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using shared.DTOs.Participants;
+using shared.DTOs;
 using System.Security.Claims;
 
 namespace backend.Controllers;
@@ -20,6 +21,7 @@ public class ParticipantsController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterParticipantRequest request)
     {
+        Console.WriteLine($"[DEBUG] Register request received for event {request.EventId} and email {request.Email}");
         try
         {
             var result = await _participantService.RegisterAsync(request);
@@ -62,5 +64,23 @@ public class ParticipantsController : ControllerBase
         if (participant == null) return NoContent();
         
         return Ok(participant);
+    }
+
+    [HttpPost("verify-ticket")]
+    public async Task<IActionResult> VerifyTicket([FromBody] TicketQrPayload request)
+    {
+        try
+        {
+            var result = await _participantService.VerifyTicketAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

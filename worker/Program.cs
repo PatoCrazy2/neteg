@@ -20,6 +20,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 // Services
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<ITicketSecurityService, TicketSecurityService>();
 
 // S3 Configuration
 var storageConfig = builder.Configuration.GetSection("Storage");
@@ -38,7 +39,7 @@ builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseRedisStorage(builder.Configuration.GetValue<string>("Redis:ConnectionString") ?? "localhost:6379"));
+    .UseRedisStorage(builder.Configuration["Redis:ConnectionString"] ?? "redis:6379"));
 
 builder.Services.AddHangfireServer(options => {
     options.WorkerCount = 10;

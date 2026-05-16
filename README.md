@@ -45,9 +45,9 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 | Gestión de eventos (Dashboard) | ✅ Completado |
 | Formularios dinámicos (JSONB) | ✅ Completado |
 | Landing Pages  | ✅ Completado |
-| Generación de pases QR | ✅ Completado |
-| Validación de acceso | 🔜 Pendiente |
-| Control de asistencia | 🔜 Pendiente |
+| Generación de pases QR (Seguros) | ✅ Completado |
+| Validación de acceso (Escáner) | ✅ Completado |
+| Control de asistencia | ✅ Completado |
 | Generación automática de certificados | 🔜 Pendiente |
 | Procesamiento asíncrono | ✅ Operacional (Hangfire) |
 
@@ -107,7 +107,11 @@ Worker Service
 Generación de PDFs / QR / Certificados
         │
         ▼
-MinIO Object Storage
+        ▼
+MinIO Object Storage (PDFs & QR Images)
+        │
+        ▼
+Validación Criptográfica (HMAC-SHA256)
 ```
 
 ## Decisiones arquitectónicas importantes
@@ -140,6 +144,8 @@ MinIO almacena:
 - assets generados
 
 evitando depender del filesystem local.
+### 🔹 Seguridad Criptográfica de Boletos
+Los boletos no son simples IDs; contienen un payload firmado con **HMAC-SHA256** que vincula al participante con su evento específico, previniendo falsificaciones y el uso de tickets en eventos ajenos.
 
 ### 🔹 Formularios Dinámicos con PostgreSQL JSONB
 Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga su propio esquema de formulario. Esto permite:
@@ -157,6 +163,7 @@ Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga
 | Frontend | Next.js 15 + TypeScript |
 | UI | Tailwind CSS |
 | Backend | ASP.NET Core 8 Web API |
+| Seguridad QR | HMAC-SHA256 (Criptografía) |
 | Worker Async | ASP.NET Background Worker + Hangfire |
 | Generación QR | QRCoder |
 | Base de Datos | PostgreSQL 16 |
@@ -304,7 +311,6 @@ Actualmente el proyecto se encuentra en etapa inicial de desarrollo (MVP).
 - ✅ Tailwind CSS
 
 ## Pendiente
-- 🔜 Validación de acceso (Check-in móvil)
 - 🔜 Generación automática de certificados (Playwright)
 - 🔜 Sistema de plantillas para certificados
 - 🔜 Notificaciones por correo electrónico (SendGrid/Amazon SES)

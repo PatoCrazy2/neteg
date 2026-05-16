@@ -10,15 +10,18 @@ public class GenerateTicketJob : IGenerateTicketJob
 {
     private readonly IParticipantRepository _participantRepository;
     private readonly IStorageService _storageService;
+    private readonly ITicketSecurityService _securityService;
     private readonly ILogger<GenerateTicketJob> _logger;
 
     public GenerateTicketJob(
         IParticipantRepository participantRepository,
         IStorageService storageService,
+        ITicketSecurityService securityService,
         ILogger<GenerateTicketJob> logger)
     {
         _participantRepository = participantRepository;
         _storageService = storageService;
+        _securityService = securityService;
         _logger = logger;
     }
 
@@ -38,9 +41,16 @@ public class GenerateTicketJob : IGenerateTicketJob
             participant.TicketStatus = "Processing";
             await _participantRepository.UpdateAsync(participant);
 
-            // 1. Generate QR Code
-            // The QR contains the participant ID for check-in
-            string qrText = participant.Id.ToString();
+            // 1. Generate QR Code Content with Signature
+            string signature = _securityService.GenerateSignature(participant.Id, participant.EventId);
+            var qrPayload = new TicketQrPayload
+            {
+                p = participant.Id,
+                e = participant.EventId,
+                s = signature
+            };
+            
+            string qrText = qrPayload.ToString();
             
             using var qrGenerator = new QRCodeGenerator();
             using var qrCodeData = qrGenerator.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q);
@@ -59,7 +69,7 @@ public class GenerateTicketJob : IGenerateTicketJob
             participant.TicketStatus = "Completed";
             await _participantRepository.UpdateAsync(participant);
 
-            _logger.LogInformation("Ticket generated successfully for participant {ParticipantId}: {TicketUrl}", 
+            _logger.LogInformation("Secure Ticket generated successfully for participant {ParticipantId}: {TicketUrl}", 
                 payload.ParticipantId, ticketUrl);
         }
         catch (Exception ex)

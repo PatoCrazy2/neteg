@@ -2,16 +2,18 @@
 
 import { Event } from "@/types/event";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, BarChart3, Settings, ShieldCheck, CheckCircle2, MoreHorizontal, ExternalLink, Mail, Loader2 } from "lucide-react";
+import { Users, BarChart3, Settings, ShieldCheck, CheckCircle2, MoreHorizontal, ExternalLink, Mail, Loader2, QrCode } from "lucide-react";
 import { useEffect, useState } from "react";
 import { participantApi } from "@/lib/api";
 import { ParticipantResponse } from "@/types/participant";
+import { useRouter } from "next/navigation";
 
 interface EventDashboardPreviewProps {
   event: Event;
 }
 
 export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
+  const router = useRouter();
   const [participants, setParticipants] = useState<ParticipantResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -207,7 +209,15 @@ export function EventDashboardPreview({ event }: EventDashboardPreviewProps) {
           </button>
         </div>
 
-        <button className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#B9B4FF] text-black font-bold text-xs hover:bg-[#9C8CFF] transition-all">
+        <button 
+          onClick={() => router.push(`/dashboard/events/${event.id}/scanner`)}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-white text-black font-bold text-xs hover:bg-white/90 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+        >
+          <QrCode className="w-4 h-4" />
+          Validar Boletos (QR)
+        </button>
+
+        <button className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-white/5 border border-white/10 text-white/80 font-bold text-xs hover:bg-white/10 transition-all">
           <Settings className="w-4 h-4" />
           Configuración Avanzada
         </button>
