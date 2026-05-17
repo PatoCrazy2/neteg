@@ -15,7 +15,8 @@ import {
   Copy, 
   Check, 
   Sparkles, 
-  Info
+  Info,
+  ChevronLeft
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { participantApi } from "@/lib/api";
@@ -29,6 +30,7 @@ export function DigitalTicket({ event, participant: initialParticipant }: Digita
   const [participant, setParticipant] = useState<ParticipantResponse | undefined>(initialParticipant);
   const [loading, setLoading] = useState(!initialParticipant && event.generateTickets);
   const [copied, setCopied] = useState(false);
+  const [showFullTicket, setShowFullTicket] = useState(false);
 
   useEffect(() => {
     // If we have an initial participant, sync it
@@ -101,10 +103,58 @@ export function DigitalTicket({ event, participant: initialParticipant }: Digita
   const isCompleted = participant?.ticketStatus === 'Completed' && participant?.ticketUrl;
   const notRequired = !event.generateTickets || participant?.ticketStatus === 'NotRequired';
 
+  // Render a compact access trigger card by default if completed
+  if (!showFullTicket && isCompleted) {
+    return (
+      <motion.div
+        layoutId="digital-ticket-container"
+        whileHover={{ y: -4, scale: 1.01 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        className="w-full bg-[#111115] rounded-[2rem] border border-white/10 p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(185,180,255,0.06),rgba(255,255,255,0))] cursor-pointer group"
+        onClick={() => setShowFullTicket(true)}
+      >
+        {/* Subtle Noise */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.015] bg-[url('data:image/svg+xml;utf8,<svg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22><filter id=%22noise%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/></filter><rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/></svg>')]" />
+        
+        {/* Glow effect on hover */}
+        <div className="absolute inset-0 bg-[#B9B4FF]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+        <div className="flex items-center gap-4 w-full mb-5 z-10">
+          <div className="w-12 h-12 rounded-2xl bg-[#B9B4FF]/10 border border-[#B9B4FF]/20 flex items-center justify-center relative flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+            <QrCode className="w-6 h-6 text-[#B9B4FF]" />
+            {!participant?.attended && (
+              <>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#B9B4FF] border-2 border-[#111115] animate-ping" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#B9B4FF] border-2 border-[#111115]" />
+              </>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[9px] font-black text-[#B9B4FF] uppercase tracking-[0.2em] mb-1">Acceso Registrado</div>
+            <h4 className="text-white font-bold text-base leading-tight truncate">Mi Acceso</h4>
+            <p className="text-white/30 text-xs truncate">Toca para abrir tu pase digital</p>
+          </div>
+        </div>
+
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowFullTicket(true);
+          }}
+          className="w-full py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-white font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer z-10"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-[#B9B4FF]" />
+          Ver Mi Acceso
+        </button>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
       {/* Ticket Container */}
       <motion.div 
+        layoutId="digital-ticket-container"
         whileHover={{ y: -4, scale: 1.01 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
         className="relative bg-[#111115] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.8)] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(185,180,255,0.07),rgba(255,255,255,0))]"
@@ -138,6 +188,16 @@ export function DigitalTicket({ event, participant: initialParticipant }: Digita
               <div className="absolute -right-16 -bottom-16 w-40 h-40 rounded-full bg-indigo-500/10 blur-3xl" />
               <Sparkles className="w-10 h-10 text-[#B9B4FF]/15 animate-bounce" />
             </div>
+          )}
+
+          {/* Collapse Trigger Button inside full view */}
+          {showFullTicket && (
+            <button 
+              onClick={() => setShowFullTicket(false)}
+              className="absolute top-5 left-5 z-20 w-8 h-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/60 transition-all cursor-pointer backdrop-blur-md shadow-lg"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
           )}
 
           {/* Elegant Dark Gradients on Cover */}
