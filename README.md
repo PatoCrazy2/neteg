@@ -48,6 +48,7 @@ El objetivo principal es construir una plataforma moderna, mantenible y escalabl
 | Generación de pases QR (Seguros) | ✅ Completado |
 | Validación de acceso (Escáner) | ✅ Completado |
 | Control de asistencia | ✅ Completado |
+| PIN de Acceso (Salva-vidas) | ✅ Completado |
 | Generación automática de certificados | 🔜 Pendiente |
 | Procesamiento asíncrono | ✅ Operacional (Hangfire) |
 
@@ -146,6 +147,13 @@ MinIO almacena:
 evitando depender del filesystem local.
 ### 🔹 Seguridad Criptográfica de Boletos
 Los boletos no son simples IDs; contienen un payload firmado con **HMAC-SHA256** que vincula al participante con su evento específico, previniendo falsificaciones y el uso de tickets en eventos ajenos.
+
+### 🔹 Sistema "Salva-vidas" de Acceso Híbrido (QR & PIN)
+Para garantizar la resiliencia en la entrada del evento (p. ej., pantallas rotas de smartphones, baja iluminación o problemas de cámara), implementamos un mecanismo de acceso híbrido:
+- **PIN Alfanumérico Único**: Al registrarse, cada participante recibe un PIN de 6 caracteres autogenerado de forma asíncrona.
+- **Exclusión de Confusión Visual**: Se excluyen caracteres visualmente ambiguos (`I`, `O`, `0`, `1`) para evitar errores humanos al dictar o digitar el código.
+- **Protección Antifraude y Colisiones**: El backend garantiza la unicidad del PIN en el evento y previene la doble entrada (si se ingresa mediante PIN, el código QR queda invalidado instantáneamente por conflicto de estado y viceversa).
+- **Interfaz Integrada de Staff**: El escáner incluye un botón de "Ingreso Manual" que despliega un teclado de alta fidelidad, manteniendo la misma respuesta visual e instantánea que la cámara.
 
 ### 🔹 Formularios Dinámicos con PostgreSQL JSONB
 Utilizamos el poder de `jsonb` en PostgreSQL para permitir que cada evento tenga su propio esquema de formulario. Esto permite:
