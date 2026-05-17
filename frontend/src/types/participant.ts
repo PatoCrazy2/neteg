@@ -17,6 +17,7 @@ export interface ParticipantResponse {
     ticketStatus?: string;
     attended: boolean;
     checkInAt?: string;
+    accessPin?: string;
     registeredAt: string;
 }
 
