@@ -111,7 +111,7 @@ export function TopNavbar() {
           </span>
 
           {isLoggedIn ? (
-            <div className="relative">
+            <div className="hidden md:block relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className={`flex items-center gap-2 p-1 pl-3 rounded-full border transition-all group cursor-pointer ${isLight ? 'border-black/10 bg-black/5 hover:bg-black/10' : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -168,12 +168,12 @@ export function TopNavbar() {
           {/* Hamburger Menu Toggle (Mobile Only) */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden w-10 h-10 rounded-full flex items-center justify-center border transition-all cursor-pointer ${isLight
-                ? 'border-black/5 bg-black/5 text-black hover:bg-black/10'
-                : 'border-white/5 bg-white/5 text-white hover:bg-white/10'
+            className={`md:hidden p-2 transition-all cursor-pointer focus:outline-none ${isLight 
+                ? 'text-black hover:text-black/75' 
+                : 'text-white hover:text-white/75'
               }`}
           >
-            {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
