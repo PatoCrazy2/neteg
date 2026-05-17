@@ -41,5 +41,9 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // Index for access PIN lookup per event
+        modelBuilder.Entity<Participant>()
+            .HasIndex(p => new { p.EventId, p.AccessPin });
     }
 }

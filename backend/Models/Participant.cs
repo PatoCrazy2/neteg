@@ -42,5 +42,8 @@ public class Participant
     public bool Attended { get; set; } = false;
     public DateTime? CheckInAt { get; set; }
 
+    [MaxLength(6)]
+    public string? AccessPin { get; set; }
+
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 }
