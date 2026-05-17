@@ -180,6 +180,36 @@ public class ParticipantService : IParticipantService
         return MapToResponse(participant);
     }
 
+    public async Task<ParticipantResponse> VerifyPinAsync(Guid eventId, string pin)
+    {
+        if (string.IsNullOrWhiteSpace(pin))
+        {
+            throw new ArgumentException("El PIN de acceso no puede estar vacío.");
+        }
+
+        // 1. Fetch Participant by PIN and EventId (normalizado a mayúsculas)
+        var participant = await _participantRepository.GetByPinAsync(eventId, pin.Trim().ToUpper());
+        if (participant == null)
+        {
+            throw new Exception("El PIN ingresado es incorrecto o no existe para este evento.");
+        }
+
+        // 2. Double Entry Prevention
+        if (participant.Attended)
+        {
+            throw new InvalidOperationException("Este boleto ya ha sido utilizado.");
+        }
+
+        // 3. Register Attendance
+        participant.Attended = true;
+        participant.CheckInAt = DateTime.UtcNow;
+        participant.Status = "CheckedIn";
+
+        await _participantRepository.UpdateAsync(participant);
+
+        return MapToResponse(participant);
+    }
+
     private ParticipantResponse MapToResponse(Participant participant)
     {
         return new ParticipantResponse

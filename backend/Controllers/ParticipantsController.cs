@@ -83,4 +83,22 @@ public class ParticipantsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPost("verify-pin")]
+    public async Task<IActionResult> VerifyPin([FromBody] VerifyPinRequest request)
+    {
+        try
+        {
+            var result = await _participantService.VerifyPinAsync(request.EventId, request.Pin);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
