@@ -36,5 +36,16 @@ public class ParticipantResponse
     public string? TicketStatus { get; set; }
     public bool Attended { get; set; }
     public DateTime? CheckInAt { get; set; }
+    public string? AccessPin { get; set; }
     public DateTime RegisteredAt { get; set; }
+}
+
+public class VerifyPinRequest
+{
+    [Required]
+    public Guid EventId { get; set; }
+
+    [Required]
+    [MaxLength(6)]
+    public string Pin { get; set; } = string.Empty;
 }

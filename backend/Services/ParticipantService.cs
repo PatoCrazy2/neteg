@@ -53,7 +53,27 @@ public class ParticipantService : IParticipantService
             }
         }
 
-        // 4. Create participant
+        // 4. Generate unique 6-character access PIN for this event
+        string accessPin = "";
+        const string pinChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No visual duplicates (O, I, 0, 1)
+        var random = new Random();
+        bool isUnique = false;
+        int attempts = 0;
+
+        while (!isUnique && attempts < 10)
+        {
+            accessPin = new string(Enumerable.Repeat(pinChars, 6)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            var existing = await _participantRepository.GetByPinAsync(request.EventId, accessPin);
+            if (existing == null)
+            {
+                isUnique = true;
+            }
+            attempts++;
+        }
+
+        // 5. Create participant
         var participant = new Participant
         {
             Id = Guid.NewGuid(),
@@ -62,6 +82,7 @@ public class ParticipantService : IParticipantService
             FullName = request.FullName,
             Email = request.Email,
             Status = "Registered",
+            AccessPin = accessPin,
             FormAnswers = JsonSerializer.Serialize(request.FormAnswers),
             RegisteredAt = DateTime.UtcNow
         };
@@ -159,6 +180,36 @@ public class ParticipantService : IParticipantService
         return MapToResponse(participant);
     }
 
+    public async Task<ParticipantResponse> VerifyPinAsync(Guid eventId, string pin)
+    {
+        if (string.IsNullOrWhiteSpace(pin))
+        {
+            throw new ArgumentException("El PIN de acceso no puede estar vacío.");
+        }
+
+        // 1. Fetch Participant by PIN and EventId (normalizado a mayúsculas)
+        var participant = await _participantRepository.GetByPinAsync(eventId, pin.Trim().ToUpper());
+        if (participant == null)
+        {
+            throw new Exception("El PIN ingresado es incorrecto o no existe para este evento.");
+        }
+
+        // 2. Double Entry Prevention
+        if (participant.Attended)
+        {
+            throw new InvalidOperationException("Este boleto ya ha sido utilizado.");
+        }
+
+        // 3. Register Attendance
+        participant.Attended = true;
+        participant.CheckInAt = DateTime.UtcNow;
+        participant.Status = "CheckedIn";
+
+        await _participantRepository.UpdateAsync(participant);
+
+        return MapToResponse(participant);
+    }
+
     private ParticipantResponse MapToResponse(Participant participant)
     {
         return new ParticipantResponse
@@ -173,6 +224,7 @@ public class ParticipantService : IParticipantService
             TicketStatus = participant.TicketStatus,
             Attended = participant.Attended,
             CheckInAt = participant.CheckInAt,
+            AccessPin = participant.AccessPin,
             RegisteredAt = participant.RegisteredAt
         };
     }

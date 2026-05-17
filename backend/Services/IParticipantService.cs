@@ -10,4 +10,5 @@ public interface IParticipantService
     Task<IEnumerable<ParticipantResponse>> GetByEventIdAsync(Guid eventId);
     Task<ParticipantResponse?> GetUserParticipationAsync(Guid eventId, Guid userId);
     Task<ParticipantResponse> VerifyTicketAsync(TicketQrPayload payload);
+    Task<ParticipantResponse> VerifyPinAsync(Guid eventId, string pin);
 }

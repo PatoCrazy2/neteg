@@ -159,9 +159,20 @@ export function DigitalTicket({ event, participant: initialParticipant }: Digita
               <div className="p-4 bg-white rounded-3xl mb-4 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                 <img src={participant.ticketUrl} alt="QR Code" className="w-32 h-32" />
               </div>
-              <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] mb-6">
-                #{participant.id.slice(0, 8).toUpperCase()}
-              </p>
+              {participant.accessPin ? (
+                <div className="text-center mb-6">
+                  <div className="text-[9px] font-bold text-white/30 uppercase tracking-widest mb-1.5">
+                    PIN de Acceso Manual
+                  </div>
+                  <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono font-bold text-[#B9B4FF] tracking-[0.35em] pl-[0.45em]">
+                    {participant.accessPin}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] mb-6">
+                  #{participant.id.slice(0, 8).toUpperCase()}
+                </p>
+              )}
               
               <div className="flex gap-3 w-full">
                 <button 
@@ -194,10 +205,16 @@ export function DigitalTicket({ event, participant: initialParticipant }: Digita
               <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
               Llega al menos 15 minutos antes de la hora programada.
             </li>
-            <li className="text-xs text-white/40 flex items-start gap-2">
+             <li className="text-xs text-white/40 flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
               Muestra este código QR en la entrada para validar tu asistencia.
             </li>
+            {participant?.accessPin && (
+              <li className="text-xs text-white/40 flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#B9B4FF] mt-1.5" />
+                Si tu QR tiene problemas para escanear, dicta el PIN al staff.
+              </li>
+            )}
           </ul>
         </div>
       )}

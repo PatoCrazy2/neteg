@@ -140,6 +140,15 @@ export const participantApi = {
     });
     return handleResponse<ParticipantResponse>(response);
   },
+
+  verifyPin: async (payload: { eventId: string; pin: string }): Promise<ParticipantResponse> => {
+    const response = await fetch(`${API_URL}/api/participants/verify-pin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<ParticipantResponse>(response);
+  },
 };
 
 // Helper to get stored token

@@ -47,6 +47,12 @@ public class ParticipantRepository : IParticipantRepository
             .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
     }
 
+    public async Task<Participant?> GetByPinAsync(Guid eventId, string pin)
+    {
+        return await _context.Participants
+            .FirstOrDefaultAsync(p => p.EventId == eventId && p.AccessPin == pin);
+    }
+
     public async Task UpdateAsync(Participant participant)
     {
         _context.Participants.Update(participant);
