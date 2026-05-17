@@ -175,10 +175,14 @@ export default function ScannerPage({ params }: ScannerPageProps) {
         navigator.vibrate([100, 50, 100]);
       }
     } catch (err: any) {
-      console.error("[SCANNER] ❌ Error en verificación:", err);
-      if (err.message.includes("409") || err.message.toLowerCase().includes("utilizado")) {
+      const isDuplicate = err.message?.includes("409") || err.message?.toLowerCase().includes("utilizado");
+
+      if (isDuplicate) {
+        console.warn("[SCANNER] ⚠️ Intento de acceso con boleto duplicado.");
         handleResult("duplicate", "Este boleto ya fue validado anteriormente.");
       } else {
+        // Los errores reales del sistema (red caída, base de datos offline, 500) sí deben reportar un error completo
+        console.error("[SCANNER] ❌ Error en verificación de ticket:", err);
         handleResult("error", err.message || "Error al validar el boleto.");
       }
     }
