@@ -36,5 +36,6 @@ public class ParticipantResponse
     public string? TicketStatus { get; set; }
     public bool Attended { get; set; }
     public DateTime? CheckInAt { get; set; }
+    public string? AccessPin { get; set; }
     public DateTime RegisteredAt { get; set; }
 }
