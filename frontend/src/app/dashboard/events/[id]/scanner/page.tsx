@@ -16,7 +16,8 @@ import {
   Camera, 
   Info,
   Loader2,
-  Users
+  Users,
+  Keyboard
 } from "lucide-react";
 
 interface ScannerPageProps {
@@ -37,6 +38,8 @@ export default function ScannerPage({ params }: ScannerPageProps) {
   const [lastParticipant, setLastParticipant] = useState<ParticipantResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isManualInput, setIsManualInput] = useState(false);
+  const [pinValue, setPinValue] = useState("");
   
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const lastScanTime = useRef<number>(0);
@@ -192,6 +195,42 @@ export default function ScannerPage({ params }: ScannerPageProps) {
     failureCount.current++;
   };
 
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinValue.length !== 6 || !eventId) return;
+
+    setStatus("processing");
+    try {
+      const participant = await participantApi.verifyPin({
+        eventId,
+        pin: pinValue.trim().toUpperCase()
+      });
+      
+      console.log("[SCANNER] ✅ Ticket verificado con PIN para:", participant.fullName);
+      
+      setLastParticipant(participant);
+      handleResult("success");
+      setIsManualInput(false);
+      setPinValue("");
+      
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    } catch (err: any) {
+      const isDuplicate = err.message?.includes("409") || err.message?.toLowerCase().includes("utilizado");
+      
+      if (isDuplicate) {
+        console.warn("[SCANNER] ⚠️ Intento de ingreso con PIN duplicado.");
+        handleResult("duplicate", "Este boleto ya fue validado anteriormente.");
+      } else {
+        console.error("[SCANNER] ❌ Error en verificación manual de PIN:", err);
+        handleResult("error", err.message || "Error al validar el PIN.");
+      }
+      setIsManualInput(false);
+      setPinValue("");
+    }
+  };
+
   const handleResult = (newStatus: ScanStatus, message: string = "") => {
     setStatus(newStatus);
     setErrorMessage(message);
@@ -337,10 +376,74 @@ export default function ScannerPage({ params }: ScannerPageProps) {
                 </motion.div>
              )}
            </AnimatePresence>
+
+           {/* Manual PIN Entry Overlay */}
+           <AnimatePresence>
+             {isManualInput && (
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 exit={{ opacity: 0, scale: 1.05 }}
+                 className="absolute inset-0 bg-[#0B0B0E]/95 z-[60] flex flex-col items-center justify-center p-8 text-center"
+               >
+                 <div className="w-16 h-16 bg-[#B9B4FF]/10 rounded-full flex items-center justify-center mb-6 border border-[#B9B4FF]/20">
+                   <Keyboard className="w-8 h-8 text-[#B9B4FF]" />
+                 </div>
+
+                 <h2 className="text-2xl font-bold text-white tracking-tight mb-2">Ingreso Manual</h2>
+                 <p className="text-white/40 text-xs max-w-xs mb-8">
+                   Digita el PIN alfanumérico de 6 caracteres del boleto del participante.
+                 </p>
+
+                 <form onSubmit={handleManualSubmit} className="w-full max-w-xs flex flex-col gap-4">
+                   <input 
+                     type="text" 
+                     maxLength={6}
+                     value={pinValue}
+                     onChange={(e) => setPinValue(e.target.value.toUpperCase())}
+                     placeholder="A4X9F2"
+                     className="w-full py-4 px-6 text-center text-3xl font-mono font-bold text-[#B9B4FF] bg-white/[0.02] border border-white/10 rounded-2xl focus:outline-none focus:border-[#B9B4FF]/50 uppercase tracking-[0.25em] pl-[0.35em]"
+                     autoFocus
+                   />
+
+                   <button 
+                     type="submit"
+                     disabled={pinValue.length !== 6 || status === "processing"}
+                     className="w-full py-4 rounded-2xl bg-[#B9B4FF] hover:bg-[#A8A2FF] text-black font-bold text-sm tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                   >
+                     {status === "processing" ? (
+                       <Loader2 className="w-4 h-4 animate-spin" />
+                     ) : (
+                       "Validar Acceso"
+                     )}
+                   </button>
+
+                   <button 
+                     type="button"
+                     onClick={() => {
+                       setIsManualInput(false);
+                       setPinValue("");
+                     }}
+                     className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/60 hover:text-white font-bold text-sm transition-all"
+                   >
+                     Cancelar
+                   </button>
+                 </form>
+               </motion.div>
+             )}
+           </AnimatePresence>
         </div>
 
         {/* Footer Info */}
         <div className="p-8 bg-black/60 backdrop-blur-2xl border-t border-white/5 flex flex-col gap-6">
+           <button 
+             onClick={() => setIsManualInput(true)}
+             className="w-full py-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/5 text-white font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer"
+           >
+             <Keyboard className="w-4 h-4 text-[#B9B4FF]" />
+             Ingresar PIN Manual
+           </button>
+
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center">
